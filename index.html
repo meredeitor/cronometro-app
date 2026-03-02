@@ -1,79 +1,410 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Cronómetro</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estudio de Tiempos Industrial "Mere"</title>
 
-<link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0f0f0f">
+    <style>
+        #cronometroApp {
+            font-family: Arial, sans-serif;
+            background: #0f0f0f;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+            max-width: 600px; /* 👈 límite de ancho */
+            margin: 20px auto; /* 👈 lo centra */
+            border-radius: 12px; /* opcional, se ve más pro */
+        }
 
-<style>
-body{
-    margin:0;
-    background:#0f0f0f;
-    color:white;
-    font-family: Arial, sans-serif;
-    text-align:center;
-}
+        .container {
+            padding: 20px;
+            max-width: 500px;
+            margin: auto;
+        }
 
-button{
-    padding:15px;
-    font-size:20px;
-    margin:10px;
-    width:80%;
-}
+        h1 {
+            font-weight: 300;
+        }
 
-#tiempo{
-    font-size:50px;
-    margin:30px;
-}
-</style>
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 8px;
+            border: none;
+            background: #1c1c1e;
+            color: white;
+        }
+
+        .time {
+            font-size: 48px;
+            margin: 20px 0;
+        }
+
+        button {
+            padding: 12px;
+            margin: 5px;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            width: 45%;
+        }
+
+        .start {
+            background: #30d158;
+        }
+
+        .stop {
+            background: #ff453a;
+        }
+
+        .lapbtn {
+            background: #0a84ff;
+        }
+
+        .reset {
+            background: #636366;
+        }
+
+        .export {
+            background: #9b59b6;
+        }
+
+        .lap {
+            display: flex;
+            justify-content: space-between;
+            padding: 6px;
+            border-bottom: 1px solid #2c2c2e;
+        }
+
+        .best {
+            color: #30d158;
+        }
+
+        .worst {
+            color: #ff453a;
+        }
+
+        .results {
+            margin-top: 15px;
+            background: #1c1c1e;
+            padding: 10px;
+            border-radius: 10px;
+            text-align: left;
+        }
+        html, body, .s-Layout, .content-wrapper {
+            background-color: #000 !important;
+            color: #fff !important;
+        }
+        .tabla-suplementos {
+            width: 100%;
+            max-width: 420px; /* para que no se vea gigante */
+            margin: 15px auto; /* 👈 esto la centra */
+            border-collapse: collapse;
+            background: #1c1c1e;
+            border-radius: 8px;
+            overflow: hidden;
+            font-size: 14px;
+            text-align: center; /* centra contenido */
+        }
+
+            .tabla-suplementos th {
+                background: #2c2c2e;
+                padding: 8px;
+                text-align: center; /* centra encabezados */
+            }
+
+            .tabla-suplementos td {
+                padding: 8px;
+                border-bottom: 1px solid #2c2c2e;
+                text-align: center; /* centra celdas */
+            }
+
+            .tabla-suplementos tr:last-child td {
+                border-bottom: none;
+            }
+
+            .tabla-suplementos input[type="checkbox"] {
+                transform: scale(1.2);
+            }
+    </style>
 </head>
 
 <body>
+    <div id="cronometroApp">
 
-<h2>Estudio de Tiempos</h2>
+        <h1>⏱ Estudio de Tiempos</h1>
 
-<div id="tiempo">00:00:00</div>
+        <input id="operacion" placeholder="Nombre de la operación">
+        <input id="cronometrista" placeholder="Cronometrista">
 
-<button onclick="iniciar()">Iniciar</button>
-<button onclick="detener()">Detener</button>
-<button onclick="resetear()">Reset</button>
+        <h3>Westinghouse</h3>
 
-<script>
-let segundos = 0;
-let intervalo = null;
+        <select id="habilidad">
+            <option value="0">Habilidad Normal (0)</option>
+            <option value="0.03">Buena (+0.03)</option>
+            <option value="0.06">Excelente (+0.06)</option>
+            <option value="-0.03">Regular (-0.03)</option>
+            <option value="-0.06">Mala (-0.06)</option>
+        </select>
 
-function actualizar(){
-    segundos++;
-    let h = String(Math.floor(segundos / 3600)).padStart(2,'0');
-    let m = String(Math.floor((segundos % 3600) / 60)).padStart(2,'0');
-    let s = String(segundos % 60).padStart(2,'0');
-    document.getElementById("tiempo").innerText = `${h}:${m}:${s}`;
-}
+        <select id="esfuerzo">
+            <option value="0">Esfuerzo Normal (0)</option>
+            <option value="0.04">Alto (+0.04)</option>
+            <option value="-0.04">Bajo (-0.04)</option>
+        </select>
 
-function iniciar(){
-    if(!intervalo){
-        intervalo = setInterval(actualizar,1000);
-    }
-}
+        <select id="condiciones">
+            <option value="0">Condiciones Normales (0)</option>
+            <option value="0.03">Buenas (+0.03)</option>
+            <option value="-0.03">Malas (-0.03)</option>
+        </select>
 
-function detener(){
-    clearInterval(intervalo);
-    intervalo = null;
-}
+        <select id="consistencia">
+            <option value="0">Consistencia Normal (0)</option>
+            <option value="0.02">Alta (+0.02)</option>
+            <option value="-0.02">Baja (-0.02)</option>
+        </select>
 
-function resetear(){
-    detener();
-    segundos = 0;
-    document.getElementById("tiempo").innerText = "00:00:00";
-}
+        <h3>Suplementos Constantes</h3>
 
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('service-worker.js');
-}
-</script>
+        <select id="genero">
+            <option value="0.09">Hombre (9%)</option>
+            <option value="0.11">Mujer (11%)</option>
+        </select>
 
+        <h3>Suplementos Variables</h3>
+
+        <table class="tabla-suplementos">
+            <thead>
+                <tr>
+                    <th>Concepto</th>
+                    <th>Aplicar</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td>Trabajo de pie (+3%)</td>
+                    <td><input type="checkbox" value="0.03" class="var"></td>
+                </tr>
+                <tr>
+                    <td>Postura incómoda (+10%)</td>
+                    <td><input type="checkbox" value="0.10" class="var"></td>
+                </tr>
+                <tr>
+                    <td>Esfuerzo físico alto (+5%)</td>
+                    <td><input type="checkbox" value="0.05" class="var"></td>
+                </tr>
+                <tr>
+                    <td>Ambiente caluroso (+4%)</td>
+                    <td><input type="checkbox" value="0.04" class="var"></td>
+                </tr>
+                <tr>
+                    <td>Alta tensión visual (+3%)</td>
+                    <td><input type="checkbox" value="0.03" class="var"></td>
+                </tr>
+                <tr>
+                    <td>Monotonía / Fatiga mental (+5%)</td>
+                    <td><input type="checkbox" value="0.05" class="var"></td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="time" id="display">00:00.00</div>
+
+        <div>
+            <button class="start" onclick="start()">Iniciar</button>
+            <button class="stop" onclick="stop()">Detener</button>
+        </div>
+
+        <div>
+            <button class="lapbtn" onclick="lap()">Memoria</button>
+            <button class="reset" onclick="reset()">Reset</button>
+        </div>
+
+        <button class="export" onclick="exportExcel()">Exportar Excel</button>
+
+        <div id="laps"></div>
+
+        <div class="results">
+            <div>Promedio Observado: <span id="prom">00:00.00</span></div>
+            <div>Factor Westinghouse: <span id="factor">1.00</span></div>
+            <div>Total Suplementos: <span id="suptotal">0%</span></div>
+            <div>Tiempo Normal: <span id="normal">00:00.00</span></div>
+            <div>Tiempo Estándar: <span id="estandar">00:00.00</span></div>
+        </div>
+
+    </div>
+
+    <script>
+
+        let startTime = 0;
+        let elapsed = 0;
+        let interval = null;
+        let laps = [];
+        let lastLapTime = 0;
+
+        function format(seg) {
+            let m = Math.floor(seg / 60);
+            let s = Math.floor(seg % 60);
+            let cs = Math.floor((seg - Math.floor(seg)) * 100);
+            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
+        }
+
+        function start() {
+            if (interval) return;
+            startTime = Date.now() - elapsed;
+            interval = setInterval(() => {
+                elapsed = Date.now() - startTime;
+                document.getElementById("display").innerText = format(elapsed / 1000);
+            }, 10);
+        }
+
+        function stop() {
+            clearInterval(interval);
+            interval = null;
+        }
+
+        function reset() {
+            stop();
+            elapsed = 0;
+            laps = [];
+            lastLapTime = 0;
+            document.getElementById("display").innerText = "00:00.00";
+            document.getElementById("laps").innerHTML = "";
+            updateResults();
+        }
+
+        function lap() {
+            if (laps.length >= 10) {
+                alert("Máximo 10 observaciones");
+                return;
+            }
+
+            let parcial = (elapsed - lastLapTime) / 1000;
+            laps.push(parcial);
+            lastLapTime = elapsed;
+
+            render();
+            updateResults();
+        }
+
+        function render() {
+            let container = document.getElementById("laps");
+            container.innerHTML = "";
+            if (laps.length === 0) return;
+
+            let min = Math.min(...laps);
+            let max = Math.max(...laps);
+
+            laps.forEach((t, i) => {
+                let clase = "";
+                if (t === min && laps.length > 1) clase = "best";
+                if (t === max && laps.length > 1) clase = "worst";
+
+                container.innerHTML += `
+            <div class="lap">
+                <span>Obs ${i + 1}</span>
+                <span class="${clase}">${format(t)}</span>
+            </div>`;
+            });
+        }
+
+        function updateResults() {
+            if (laps.length === 0) {
+                document.getElementById("prom").innerText = "00:00.00";
+                return;
+            }
+
+            let prom = laps.reduce((a, b) => a + b, 0) / laps.length;
+
+            let habilidad = parseFloat(document.getElementById("habilidad").value);
+            let esfuerzo = parseFloat(document.getElementById("esfuerzo").value);
+            let condiciones = parseFloat(document.getElementById("condiciones").value);
+            let consistencia = parseFloat(document.getElementById("consistencia").value);
+
+            let factor = 1 + habilidad + esfuerzo + condiciones + consistencia;
+            let normal = prom * factor;
+
+            // suplementos
+            let constantes = parseFloat(document.getElementById("genero").value);
+
+            let variables = 0;
+            document.querySelectorAll(".var:checked").forEach(el => {
+                variables += parseFloat(el.value);
+            });
+
+            let totalSuplementos = constantes + variables;
+
+            let estandar = normal * (1 + totalSuplementos);
+
+            document.getElementById("prom").innerText = format(prom);
+            document.getElementById("factor").innerText = factor.toFixed(2);
+            document.getElementById("suptotal").innerText = (totalSuplementos * 100).toFixed(1) + "%";
+            document.getElementById("normal").innerText = format(normal);
+            document.getElementById("estandar").innerText = format(estandar);
+        }
+
+        function exportExcel() {
+
+            if (laps.length === 0) {
+                alert("No hay datos");
+                return;
+            }
+
+            let operacion = document.getElementById("operacion").value || "N/A";
+            let crono = document.getElementById("cronometrista").value || "N/A";
+
+            let prom = laps.reduce((a, b) => a + b, 0) / laps.length;
+
+            let habilidad = parseFloat(document.getElementById("habilidad").value);
+            let esfuerzo = parseFloat(document.getElementById("esfuerzo").value);
+            let condiciones = parseFloat(document.getElementById("condiciones").value);
+            let consistencia = parseFloat(document.getElementById("consistencia").value);
+
+            let factor = 1 + habilidad + esfuerzo + condiciones + consistencia;
+            let normal = prom * factor;
+
+            let constantes = parseFloat(document.getElementById("genero").value);
+
+            let variables = 0;
+            document.querySelectorAll(".var:checked").forEach(el => {
+                variables += parseFloat(el.value);
+            });
+
+            let totalSuplementos = constantes + variables;
+            let estandar = normal * (1 + totalSuplementos);
+
+            let csv = "";
+
+            // ENCABEZADO
+            csv += "Operacion:," + operacion + "\n";
+            csv += "Cronometrista:," + crono + "\n\n";
+
+            // TABLA
+            csv += "Observacion,Tiempo (segundos)\n";
+            laps.forEach((t, i) => {
+                csv += `Obs ${i + 1},${t.toFixed(3)}\n`;
+            });
+
+            csv += "\n";
+
+            // RESUMEN
+            csv += "Resumen del Estudio\n";
+            csv += `Promedio Observado:,${format(prom)}\n`;
+            csv += `Factor Westinghouse:,${factor.toFixed(2)}\n`;
+            csv += `Total Suplementos:,${(totalSuplementos * 100).toFixed(1)}%\n`;
+            csv += `Tiempo Normal:,${format(normal)}\n`;
+            csv += `Tiempo Estandar:,${format(estandar)}\n`;
+
+            let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+            let link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Estudio_Tiempos_IPN.csv";
+            link.click();
+        }
+
+    </script>
 </body>
 </html>
