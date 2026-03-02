@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cronómetro</title>
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0f0f0f">
+
+<style>
+body{
+    margin:0;
+    background:#0f0f0f;
+    color:white;
+    font-family: Arial, sans-serif;
+    text-align:center;
+}
+
+button{
+    padding:15px;
+    font-size:20px;
+    margin:10px;
+    width:80%;
+}
+
+#tiempo{
+    font-size:50px;
+    margin:30px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Estudio de Tiempos</h2>
+
+<div id="tiempo">00:00:00</div>
+
+<button onclick="iniciar()">Iniciar</button>
+<button onclick="detener()">Detener</button>
+<button onclick="resetear()">Reset</button>
+
+<script>
+let segundos = 0;
+let intervalo = null;
+
+function actualizar(){
+    segundos++;
+    let h = String(Math.floor(segundos / 3600)).padStart(2,'0');
+    let m = String(Math.floor((segundos % 3600) / 60)).padStart(2,'0');
+    let s = String(segundos % 60).padStart(2,'0');
+    document.getElementById("tiempo").innerText = `${h}:${m}:${s}`;
+}
+
+function iniciar(){
+    if(!intervalo){
+        intervalo = setInterval(actualizar,1000);
+    }
+}
+
+function detener(){
+    clearInterval(intervalo);
+    intervalo = null;
+}
+
+function resetear(){
+    detener();
+    segundos = 0;
+    document.getElementById("tiempo").innerText = "00:00:00";
+}
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('service-worker.js');
+}
+</script>
+
+</body>
+</html>
