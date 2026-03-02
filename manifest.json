@@ -1,7 +1,9 @@
 {
-  "name": "Estudio de Tiempos",
+  "id": "com.mere.estudiotiempos",
+  "name": "Estudio de Tiempos Industrial Mere",
   "short_name": "Cronometro",
-  "start_url": "index.html",
+  "start_url": "./",
+  "scope": "./",
   "display": "standalone",
   "background_color": "#0f0f0f",
   "theme_color": "#0f0f0f",
@@ -10,12 +12,14 @@
     {
       "src": "icons/icon-192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     },
     {
       "src": "icons/icon-512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any maskable"
     }
   ]
 }
