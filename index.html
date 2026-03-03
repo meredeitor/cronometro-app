@@ -1,411 +1,610 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Estudio de Tiempos Industrial "Mere"</title>
-    <link rel="manifest" href="./manifest.json">
-    <meta name="theme-color" content="#0f0f0f">
-    <style>
-        #cronometroApp {
-            font-family: Arial, sans-serif;
-            background: #0f0f0f;
-            color: #fff;
-            text-align: center;
-            padding: 20px;
-            max-width: 600px; /* 👈 límite de ancho */
-            margin: 20px auto; /* 👈 lo centra */
-            border-radius: 12px; /* opcional, se ve más pro */
-        }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Cronómetro</title>
 
-        .container {
-            padding: 20px;
-            max-width: 500px;
-            margin: auto;
-        }
+<link rel="manifest" href="./manifest.json">
+<meta name="theme-color" content="#0f0f0f">
 
-        h1 {
-            font-weight: 300;
-        }
+<style>
+  #cronometroApp {
+    font-family: Arial, sans-serif;
+    background: #0f0f0f;
+    color: #fff;
+    text-align: center;
+    padding: 20px;
+    max-width: 600px;
+    margin: 20px auto;
+    border-radius: 24px;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+  }
+  .container { padding: 20px; max-width: 500px; margin: auto; }
+  h1 { font-weight: 300; }
+  input, select {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 8px;
+    border: none;
+    background: #1c1c1e;
+    color: white;
+  }
+  button {
+    padding: 16px;
+    margin: 8px 0;
+    border: none;
+    border-radius: 22px;
+    font-weight: 600;
+    font-size: 16px;
+    width: 100%;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+  }
+  button:active { transform: scale(0.97); opacity: 0.85; }
 
-        input, select {
-            width: 100%;
-            padding: 10px;
-            margin: 5px 0;
-            border-radius: 8px;
-            border: none;
-            background: #1c1c1e;
-            color: white;
-        }
+  .botones { display: flex; justify-content: center; gap: 18px; margin-top: 25px; }
+  .circle {
+    width: 70px; height: 70px; border-radius: 50%;
+    border: none; font-size: 24px; font-weight: bold;
+    color: white; cursor: pointer; transition: all 0.15s ease;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .circle:active { transform: scale(0.9); opacity: 0.8; }
+  .start { background: #34C759; }
+  .stop { background: #FF3B30; }
+  .lapbtn { background: #0A84FF; }
+  .reset { background: #8E8E93; }
+  .export { background: #BF5AF2; color: white; }
 
-        .time {
-            font-size: 48px;
-            margin: 20px 0;
-        }
+  .saveop { background: #FFD60A; color: #111; }
+  .opsCard { margin-top: 18px; background: #1c1c1e; border-radius: 18px; padding: 12px; text-align: left; }
+  .opRow { display: flex; justify-content: space-between; gap: 10px; padding: 10px 6px; border-bottom: 1px solid #2c2c2e; align-items: center; }
+  .opRow:last-child { border-bottom: none; }
+  .opName { font-weight: 600; }
+  .opMeta { color: #d1d1d6; font-size: 13px; }
+  .miniBtns { display: flex; gap: 8px; }
+  .miniBtn { width: auto; padding: 10px 12px; border-radius: 12px; font-size: 13px; }
+  .loadBtn { background: #0A84FF; color: #fff; }
+  .delBtn { background: #FF453A; color: #fff; }
 
-        button {
-            padding: 12px;
-            margin: 5px;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            width: 45%;
-        }
+  .lap { display: flex; justify-content: space-between; padding: 6px; border-bottom: 1px solid #2c2c2e; }
+  .best { color: #30d158; }
+  .worst { color: #ff453a; }
 
-        .start {
-            background: #30d158;
-        }
+  .tabla-suplementos {
+    width: 100%;
+    max-width: 420px;
+    margin: 15px auto;
+    border-collapse: collapse;
+    background: #1c1c1e;
+    border-radius: 8px;
+    overflow: hidden;
+    font-size: 14px;
+    text-align: center;
+  }
+  .tabla-suplementos th { background: #2c2c2e; padding: 8px; text-align: center; }
+  .tabla-suplementos td { padding: 8px; border-bottom: 1px solid #2c2c2e; text-align: center; }
+  .tabla-suplementos tr:last-child td { border-bottom: none; }
+  .tabla-suplementos input[type="checkbox"] { transform: scale(1.2); }
 
-        .stop {
-            background: #ff453a;
-        }
+  .watch-container { position: relative; width: 220px; height: 220px; margin: 40px auto; }
+  .ring { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: #1c1c1e; stroke-width: 12; }
+  .ring-progress {
+    fill: none; stroke: #0A84FF; stroke-width: 12;
+    stroke-linecap: round; stroke-dasharray: 597; stroke-dashoffset: 597;
+    transition: stroke-dashoffset 0.1s linear;
+  }
+  .time {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 32px; font-weight: 500;
+    letter-spacing: 2px; font-variant-numeric: tabular-nums;
+  }
 
-        .lapbtn {
-            background: #0a84ff;
-        }
-
-        .reset {
-            background: #636366;
-        }
-
-        .export {
-            background: #9b59b6;
-        }
-
-        .lap {
-            display: flex;
-            justify-content: space-between;
-            padding: 6px;
-            border-bottom: 1px solid #2c2c2e;
-        }
-
-        .best {
-            color: #30d158;
-        }
-
-        .worst {
-            color: #ff453a;
-        }
-
-        .results {
-            margin-top: 15px;
-            background: #1c1c1e;
-            padding: 10px;
-            border-radius: 10px;
-            text-align: left;
-        }
-        html, body, .s-Layout, .content-wrapper {
-            background-color: #000 !important;
-            color: #fff !important;
-        }
-        .tabla-suplementos {
-            width: 100%;
-            max-width: 420px; /* para que no se vea gigante */
-            margin: 15px auto; /* 👈 esto la centra */
-            border-collapse: collapse;
-            background: #1c1c1e;
-            border-radius: 8px;
-            overflow: hidden;
-            font-size: 14px;
-            text-align: center; /* centra contenido */
-        }
-
-            .tabla-suplementos th {
-                background: #2c2c2e;
-                padding: 8px;
-                text-align: center; /* centra encabezados */
-            }
-
-            .tabla-suplementos td {
-                padding: 8px;
-                border-bottom: 1px solid #2c2c2e;
-                text-align: center; /* centra celdas */
-            }
-
-            .tabla-suplementos tr:last-child td {
-                border-bottom: none;
-            }
-
-            .tabla-suplementos input[type="checkbox"] {
-                transform: scale(1.2);
-            }
-    </style>
+  .results-card {
+    margin-top: 35px;
+    background: #1c1c1e;
+    border-radius: 22px;
+    padding: 20px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    text-align: left;
+  }
+  .result-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 10px 0; font-size: 15px; color: #d1d1d6;
+  }
+  .result-row.big { font-size: 17px; font-weight: 500; }
+  .result-row.final { font-size: 19px; font-weight: 600; color: #0A84FF; }
+  .value { font-variant-numeric: tabular-nums; font-weight: 500; color: #ffffff; }
+  .highlight { color: #34C759; }
+  .divider { height: 1px; background: #2c2c2e; margin: 10px 0; }
+</style>
 </head>
 
 <body>
-    <div id="cronometroApp">
+<div id="cronometroApp">
+  <h1>⏱ Estudio de Tiempos</h1>
 
-        <h1>⏱ Estudio de Tiempos</h1>
+  <input id="operacion" placeholder="Nombre de la operación">
+  <input id="cronometrista" placeholder="Cronometrista">
 
-        <input id="operacion" placeholder="Nombre de la operación">
-        <input id="cronometrista" placeholder="Cronometrista">
+  <h3>Westinghouse</h3>
+  <select id="habilidad">
+    <option value="0">Habilidad Normal (0)</option>
+    <option value="0.03">Buena (+0.03)</option>
+    <option value="0.06">Excelente (+0.06)</option>
+    <option value="-0.03">Regular (-0.03)</option>
+    <option value="-0.06">Mala (-0.06)</option>
+  </select>
 
-        <h3>Westinghouse</h3>
+  <select id="esfuerzo">
+    <option value="0">Esfuerzo Normal (0)</option>
+    <option value="0.04">Alto (+0.04)</option>
+    <option value="-0.04">Bajo (-0.04)</option>
+  </select>
 
-        <select id="habilidad">
-            <option value="0">Habilidad Normal (0)</option>
-            <option value="0.03">Buena (+0.03)</option>
-            <option value="0.06">Excelente (+0.06)</option>
-            <option value="-0.03">Regular (-0.03)</option>
-            <option value="-0.06">Mala (-0.06)</option>
-        </select>
+  <select id="condiciones">
+    <option value="0">Condiciones Normales (0)</option>
+    <option value="0.03">Buenas (+0.03)</option>
+    <option value="-0.03">Malas (-0.03)</option>
+  </select>
 
-        <select id="esfuerzo">
-            <option value="0">Esfuerzo Normal (0)</option>
-            <option value="0.04">Alto (+0.04)</option>
-            <option value="-0.04">Bajo (-0.04)</option>
-        </select>
+  <select id="consistencia">
+    <option value="0">Consistencia Normal (0)</option>
+    <option value="0.02">Alta (+0.02)</option>
+    <option value="-0.02">Baja (-0.02)</option>
+  </select>
 
-        <select id="condiciones">
-            <option value="0">Condiciones Normales (0)</option>
-            <option value="0.03">Buenas (+0.03)</option>
-            <option value="-0.03">Malas (-0.03)</option>
-        </select>
+  <h3>Suplementos Constantes</h3>
+  <select id="genero">
+    <option value="0.09">Hombre (9%)</option>
+    <option value="0.11">Mujer (11%)</option>
+  </select>
 
-        <select id="consistencia">
-            <option value="0">Consistencia Normal (0)</option>
-            <option value="0.02">Alta (+0.02)</option>
-            <option value="-0.02">Baja (-0.02)</option>
-        </select>
+  <h3>Suplementos Variables</h3>
+  <table class="tabla-suplementos">
+    <thead>
+      <tr><th>Concepto</th><th>Aplicar</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Trabajo de pie (+3%)</td><td><input type="checkbox" value="0.03" class="var"></td></tr>
+      <tr><td>Postura incómoda (+10%)</td><td><input type="checkbox" value="0.10" class="var"></td></tr>
+      <tr><td>Esfuerzo físico alto (+5%)</td><td><input type="checkbox" value="0.05" class="var"></td></tr>
+      <tr><td>Ambiente caluroso (+4%)</td><td><input type="checkbox" value="0.04" class="var"></td></tr>
+      <tr><td>Alta tensión visual (+3%)</td><td><input type="checkbox" value="0.03" class="var"></td></tr>
+      <tr><td>Monotonía / Fatiga mental (+5%)</td><td><input type="checkbox" value="0.05" class="var"></td></tr>
+    </tbody>
+  </table>
 
-        <h3>Suplementos Constantes</h3>
+  <div class="watch-container">
+    <svg class="ring" width="220" height="220">
+      <circle class="ring-bg" cx="110" cy="110" r="95"></circle>
+      <circle class="ring-progress" cx="110" cy="110" r="95"></circle>
+    </svg>
+    <div class="time" id="display">00:00.00</div>
+  </div>
 
-        <select id="genero">
-            <option value="0.09">Hombre (9%)</option>
-            <option value="0.11">Mujer (11%)</option>
-        </select>
+  <div class="botones">
+    <button class="circle start" onclick="start()">▶</button>
+    <button class="circle stop" onclick="stop()">⏸</button>
+    <button class="circle lapbtn" onclick="lap()">＋</button>
+    <button class="circle reset" onclick="reset()">⟲</button>
+  </div>
 
-        <h3>Suplementos Variables</h3>
+  <div id="laps"></div>
 
-        <table class="tabla-suplementos">
-            <thead>
-                <tr>
-                    <th>Concepto</th>
-                    <th>Aplicar</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td>Trabajo de pie (+3%)</td>
-                    <td><input type="checkbox" value="0.03" class="var"></td>
-                </tr>
-                <tr>
-                    <td>Postura incómoda (+10%)</td>
-                    <td><input type="checkbox" value="0.10" class="var"></td>
-                </tr>
-                <tr>
-                    <td>Esfuerzo físico alto (+5%)</td>
-                    <td><input type="checkbox" value="0.05" class="var"></td>
-                </tr>
-                <tr>
-                    <td>Ambiente caluroso (+4%)</td>
-                    <td><input type="checkbox" value="0.04" class="var"></td>
-                </tr>
-                <tr>
-                    <td>Alta tensión visual (+3%)</td>
-                    <td><input type="checkbox" value="0.03" class="var"></td>
-                </tr>
-                <tr>
-                    <td>Monotonía / Fatiga mental (+5%)</td>
-                    <td><input type="checkbox" value="0.05" class="var"></td>
-                </tr>
-            </tbody>
-        </table>
-
-        <div class="time" id="display">00:00.00</div>
-
-        <div>
-            <button class="start" onclick="start()">Iniciar</button>
-            <button class="stop" onclick="stop()">Detener</button>
-        </div>
-
-        <div>
-            <button class="lapbtn" onclick="lap()">Memoria</button>
-            <button class="reset" onclick="reset()">Reset</button>
-        </div>
-
-        <button class="export" onclick="exportExcel()">Exportar Excel</button>
-
-        <div id="laps"></div>
-
-        <div class="results">
-            <div>Promedio Observado: <span id="prom">00:00.00</span></div>
-            <div>Factor Westinghouse: <span id="factor">1.00</span></div>
-            <div>Total Suplementos: <span id="suptotal">0%</span></div>
-            <div>Tiempo Normal: <span id="normal">00:00.00</span></div>
-            <div>Tiempo Estándar: <span id="estandar">00:00.00</span></div>
-        </div>
-
+  <div class="results-card">
+    <div class="result-row">
+      <span>Promedio Observado</span>
+      <span id="prom" class="value">00:00.00</span>
     </div>
+    <div class="result-row">
+      <span>Factor Westinghouse</span>
+      <span id="factor" class="value highlight">1.00</span>
+    </div>
+    <div class="result-row">
+      <span>Total Suplementos</span>
+      <span id="suptotal" class="value">0%</span>
+    </div>
+    <div class="divider"></div>
+    <div class="result-row big">
+      <span>Tiempo Normal</span>
+      <span id="normal" class="value">00:00.00</span>
+    </div>
+    <div class="result-row big final">
+      <span>Tiempo Estándar</span>
+      <span id="estandar" class="value">00:00.00</span>
+    </div>
+  </div>
 
-    <script>
+  <button class="saveop" onclick="saveOperation()">Guardar Operación</button>
 
-        let startTime = 0;
-        let elapsed = 0;
-        let interval = null;
-        let laps = [];
-        let lastLapTime = 0;
+  <div class="opsCard">
+    <div style="font-weight:700; margin-bottom:10px;">📦 Operaciones guardadas</div>
+    <div id="opsList" style="min-height:20px; color:#d1d1d6;">(Aún no guardas operaciones)</div>
+  </div>
 
-        function format(seg) {
-            let m = Math.floor(seg / 60);
-            let s = Math.floor(seg % 60);
-            let cs = Math.floor((seg - Math.floor(seg)) * 100);
-            return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}.${cs.toString().padStart(2, '0')}`;
-        }
+  <button class="export" onclick="exportExcel()">Exportar Excel</button>
+</div>
 
-        function start() {
-            if (interval) return;
-            startTime = Date.now() - elapsed;
-            interval = setInterval(() => {
-                elapsed = Date.now() - startTime;
-                document.getElementById("display").innerText = format(elapsed / 1000);
-            }, 10);
-        }
+<script>
+  // ---------------------------
+  // Cronómetro (operación actual)
+  // ---------------------------
+  let startTime = 0;
+  let elapsed = 0;
+  let interval = null;
+  let laps = [];
+  let lastLapTime = 0;
 
-        function stop() {
-            clearInterval(interval);
-            interval = null;
-        }
+  // ---------------------------
+  // Multi-operaciones (guardadas)
+  // ---------------------------
+  let savedOps = []; // { id, operacion, cronometrista, laps[], settings{}, summary{} }
+  let opAutoId = 1;
 
-        function reset() {
-            stop();
-            elapsed = 0;
-            laps = [];
-            lastLapTime = 0;
-            document.getElementById("display").innerText = "00:00.00";
-            document.getElementById("laps").innerHTML = "";
-            updateResults();
-        }
+  function format(seg) {
+    let m = Math.floor(seg / 60);
+    let s = Math.floor(seg % 60);
+    let cs = Math.floor((seg - Math.floor(seg)) * 100);
+    return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${cs.toString().padStart(2,'0')}`;
+  }
 
-        function lap() {
-            if (laps.length >= 10) {
-                alert("Máximo 10 observaciones");
-                return;
-            }
+  function start() {
+    if (interval) return;
+    startTime = Date.now() - elapsed;
 
-            let parcial = (elapsed - lastLapTime) / 1000;
-            laps.push(parcial);
-            lastLapTime = elapsed;
+    interval = setInterval(() => {
+      elapsed = Date.now() - startTime;
+      let seconds = elapsed / 1000;
 
-            render();
-            updateResults();
-        }
+      document.getElementById("display").innerText = format(seconds);
 
-        function render() {
-            let container = document.getElementById("laps");
-            container.innerHTML = "";
-            if (laps.length === 0) return;
+      // anillo
+      let maxTime = 60;
+      let progress = (seconds % maxTime) / maxTime;
+      let circumference = 597;
+      document.querySelector(".ring-progress").style.strokeDashoffset =
+        circumference - (circumference * progress);
+    }, 10);
+  }
 
-            let min = Math.min(...laps);
-            let max = Math.max(...laps);
+  function stop() {
+    clearInterval(interval);
+    interval = null;
+  }
 
-            laps.forEach((t, i) => {
-                let clase = "";
-                if (t === min && laps.length > 1) clase = "best";
-                if (t === max && laps.length > 1) clase = "worst";
+  function reset() {
+    stop();
+    elapsed = 0;
+    laps = [];
+    lastLapTime = 0;
+    document.getElementById("display").innerText = "00:00.00";
+    document.getElementById("laps").innerHTML = "";
+    updateResults();
+  }
 
-                container.innerHTML += `
-            <div class="lap">
-                <span>Obs ${i + 1}</span>
-                <span class="${clase}">${format(t)}</span>
-            </div>`;
-            });
-        }
+  function lap() {
+    if (laps.length >= 10) {
+      alert("Máximo 10 observaciones");
+      return;
+    }
+    let parcial = (elapsed - lastLapTime) / 1000;
+    laps.push(parcial);
+    lastLapTime = elapsed;
 
-        function updateResults() {
-            if (laps.length === 0) {
-                document.getElementById("prom").innerText = "00:00.00";
-                return;
-            }
+    renderLaps();
+    updateResults();
+  }
 
-            let prom = laps.reduce((a, b) => a + b, 0) / laps.length;
+  function renderLaps() {
+    let container = document.getElementById("laps");
+    container.innerHTML = "";
+    if (laps.length === 0) return;
 
-            let habilidad = parseFloat(document.getElementById("habilidad").value);
-            let esfuerzo = parseFloat(document.getElementById("esfuerzo").value);
-            let condiciones = parseFloat(document.getElementById("condiciones").value);
-            let consistencia = parseFloat(document.getElementById("consistencia").value);
+    let min = Math.min(...laps);
+    let max = Math.max(...laps);
 
-            let factor = 1 + habilidad + esfuerzo + condiciones + consistencia;
-            let normal = prom * factor;
+    laps.forEach((t, i) => {
+      let clase = "";
+      if (t === min && laps.length > 1) clase = "best";
+      if (t === max && laps.length > 1) clase = "worst";
 
-            // suplementos
-            let constantes = parseFloat(document.getElementById("genero").value);
+      container.innerHTML += `
+        <div class="lap">
+          <span>Obs ${i + 1}</span>
+          <span class="${clase}">${format(t)}</span>
+        </div>`;
+    });
+  }
 
-            let variables = 0;
-            document.querySelectorAll(".var:checked").forEach(el => {
-                variables += parseFloat(el.value);
-            });
+  function getSettingsSnapshot() {
+    let habilidad = parseFloat(document.getElementById("habilidad").value);
+    let esfuerzo = parseFloat(document.getElementById("esfuerzo").value);
+    let condiciones = parseFloat(document.getElementById("condiciones").value);
+    let consistencia = parseFloat(document.getElementById("consistencia").value);
+    let genero = parseFloat(document.getElementById("genero").value);
 
-            let totalSuplementos = constantes + variables;
+    let variables = [];
+    document.querySelectorAll(".var:checked").forEach(el => {
+      variables.push(parseFloat(el.value));
+    });
 
-            let estandar = normal * (1 + totalSuplementos);
+    return {
+      habilidad: habilidad,
+      esfuerzo: esfuerzo,
+      condiciones: condiciones,
+      consistencia: consistencia,
+      genero: genero,
+      variables: variables
+    };
+  }
 
-            document.getElementById("prom").innerText = format(prom);
-            document.getElementById("factor").innerText = factor.toFixed(2);
-            document.getElementById("suptotal").innerText = (totalSuplementos * 100).toFixed(1) + "%";
-            document.getElementById("normal").innerText = format(normal);
-            document.getElementById("estandar").innerText = format(estandar);
-        }
+  function applySettingsSnapshot(s) {
+    document.getElementById("habilidad").value = String(s.habilidad);
+    document.getElementById("esfuerzo").value = String(s.esfuerzo);
+    document.getElementById("condiciones").value = String(s.condiciones);
+    document.getElementById("consistencia").value = String(s.consistencia);
+    document.getElementById("genero").value = String(s.genero);
 
-        function exportExcel() {
+    // checkboxes
+    document.querySelectorAll(".var").forEach(el => el.checked = false);
+    if (s.variables && s.variables.length) {
+      document.querySelectorAll(".var").forEach(el => {
+        let v = parseFloat(el.value);
+        if (s.variables.indexOf(v) >= 0) el.checked = true;
+      });
+    }
+  }
 
-            if (laps.length === 0) {
-                alert("No hay datos");
-                return;
-            }
+  function calcSummary(lapsArr, settings) {
+    if (!lapsArr || lapsArr.length === 0) {
+      return {
+        prom: 0, factor: 1, totalSuplementos: 0, normal: 0, estandar: 0
+      };
+    }
 
-            let operacion = document.getElementById("operacion").value || "N/A";
-            let crono = document.getElementById("cronometrista").value || "N/A";
+    let prom = lapsArr.reduce((a,b) => a + b, 0) / lapsArr.length;
 
-            let prom = laps.reduce((a, b) => a + b, 0) / laps.length;
+    let factor = 1 + settings.habilidad + settings.esfuerzo + settings.condiciones + settings.consistencia;
+    let normal = prom * factor;
 
-            let habilidad = parseFloat(document.getElementById("habilidad").value);
-            let esfuerzo = parseFloat(document.getElementById("esfuerzo").value);
-            let condiciones = parseFloat(document.getElementById("condiciones").value);
-            let consistencia = parseFloat(document.getElementById("consistencia").value);
+    let constantes = settings.genero;
+    let variablesSum = 0;
+    (settings.variables || []).forEach(v => variablesSum += v);
 
-            let factor = 1 + habilidad + esfuerzo + condiciones + consistencia;
-            let normal = prom * factor;
+    let totalSuplementos = constantes + variablesSum;
+    let estandar = normal * (1 + totalSuplementos);
 
-            let constantes = parseFloat(document.getElementById("genero").value);
+    return {
+      prom: prom,
+      factor: factor,
+      totalSuplementos: totalSuplementos,
+      normal: normal,
+      estandar: estandar
+    };
+  }
 
-            let variables = 0;
-            document.querySelectorAll(".var:checked").forEach(el => {
-                variables += parseFloat(el.value);
-            });
+  function updateResults() {
+    if (laps.length === 0) {
+      document.getElementById("prom").innerText = "00:00.00";
+      document.getElementById("factor").innerText = "1.00";
+      document.getElementById("suptotal").innerText = "0%";
+      document.getElementById("normal").innerText = "00:00.00";
+      document.getElementById("estandar").innerText = "00:00.00";
+      return;
+    }
 
-            let totalSuplementos = constantes + variables;
-            let estandar = normal * (1 + totalSuplementos);
+    let settings = getSettingsSnapshot();
+    let sum = calcSummary(laps, settings);
 
-            let csv = "";
+    document.getElementById("prom").innerText = format(sum.prom);
+    document.getElementById("factor").innerText = sum.factor.toFixed(2);
+    document.getElementById("suptotal").innerText = (sum.totalSuplementos * 100).toFixed(1) + "%";
+    document.getElementById("normal").innerText = format(sum.normal);
+    document.getElementById("estandar").innerText = format(sum.estandar);
+  }
 
-            // ENCABEZADO
-            csv += "Operacion:," + operacion + "\n";
-            csv += "Cronometrista:," + crono + "\n\n";
+  // ---------------------------
+  // Multi-operaciones: Guardar / listar / cargar / eliminar
+  // ---------------------------
+  function saveOperation() {
+    if (laps.length === 0) {
+      alert("No hay observaciones (laps) para guardar.");
+      return;
+    }
 
-            // TABLA
-            csv += "Observacion,Tiempo (segundos)\n";
-            laps.forEach((t, i) => {
-                csv += `Obs ${i + 1},${t.toFixed(3)}\n`;
-            });
+    let operacion = (document.getElementById("operacion").value || "").trim();
+    if (!operacion) {
+      alert("Escribe el nombre de la operación antes de guardar.");
+      return;
+    }
 
-            csv += "\n";
+    let crono = (document.getElementById("cronometrista").value || "N/A").trim();
+    let settings = getSettingsSnapshot();
+    let summary = calcSummary(laps, settings);
 
-            // RESUMEN
-            csv += "Resumen del Estudio\n";
-            csv += `Promedio Observado:,${format(prom)}\n`;
-            csv += `Factor Westinghouse:,${factor.toFixed(2)}\n`;
-            csv += `Total Suplementos:,${(totalSuplementos * 100).toFixed(1)}%\n`;
-            csv += `Tiempo Normal:,${format(normal)}\n`;
-            csv += `Tiempo Estandar:,${format(estandar)}\n`;
+    savedOps.push({
+      id: opAutoId++,
+      operacion: operacion,
+      cronometrista: crono,
+      laps: laps.slice(0), // copia
+      settings: settings,
+      summary: summary,
+      savedAt: new Date().toISOString()
+    });
 
-            let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-            let link = document.createElement("a");
-            link.href = URL.createObjectURL(blob);
-            link.download = "Estudio_Tiempos_IPN.csv";
-            link.click();
-        }
+    renderOpsList();
 
-    </script>
+    // Prepara para la siguiente operación (limpia solo tiempos/laps)
+    reset();
+    // opcional: limpiar nombre de operación
+    document.getElementById("operacion").value = "";
+  }
+
+  function renderOpsList() {
+    let el = document.getElementById("opsList");
+    if (!savedOps.length) {
+      el.innerHTML = "(Aún no guardas operaciones)";
+      return;
+    }
+
+    let html = "";
+    savedOps.forEach(op => {
+      html += `
+        <div class="opRow">
+          <div>
+            <div class="opName">${escapeHtml(op.operacion)}</div>
+            <div class="opMeta">${op.laps.length} ciclos · Prom ${format(op.summary.prom)} · Est ${format(op.summary.estandar)}</div>
+          </div>
+          <div class="miniBtns">
+            <button class="miniBtn loadBtn" onclick="loadOp(${op.id})">Cargar</button>
+            <button class="miniBtn delBtn" onclick="deleteOp(${op.id})">X</button>
+          </div>
+        </div>`;
+    });
+
+    el.innerHTML = html;
+  }
+
+  function loadOp(id) {
+    let idx = savedOps.findIndex(x => x.id === id);
+    if (idx < 0) return;
+    let op = savedOps[idx];
+
+    // carga en pantalla para editar y vuelve a medir si quieres
+    document.getElementById("operacion").value = op.operacion;
+    document.getElementById("cronometrista").value = op.cronometrista;
+    applySettingsSnapshot(op.settings);
+
+    // pasa laps al “actual”
+    laps = op.laps.slice(0);
+    lastLapTime = elapsed; // por si sigues cronometrando continuo, evitamos salto
+    renderLaps();
+    updateResults();
+
+    // lo quitamos de guardadas (para evitar duplicados al re-guardar)
+    savedOps.splice(idx, 1);
+    renderOpsList();
+  }
+
+  function deleteOp(id) {
+    savedOps = savedOps.filter(x => x.id !== id);
+    renderOpsList();
+  }
+
+  function escapeHtml(s) {
+    return String(s)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  // ---------------------------
+  // Export CSV (Excel)
+  // ---------------------------
+  function csvCell(v) {
+    let s = String(v ?? "");
+    if (s.indexOf('"') >= 0) s = s.replace(/"/g, '""');
+    if (/[",\n\r]/.test(s)) s = '"' + s + '"';
+    return s;
+  }
+
+  function exportExcel() {
+    // Incluye lo guardado + lo actual (si hay)
+    let exportOps = savedOps.slice(0);
+
+    if (laps.length > 0) {
+      let operacion = (document.getElementById("operacion").value || "").trim() || "N/A";
+      let crono = (document.getElementById("cronometrista").value || "N/A").trim();
+      let settings = getSettingsSnapshot();
+      let summary = calcSummary(laps, settings);
+
+      exportOps.push({
+        id: 0,
+        operacion: operacion,
+        cronometrista: crono,
+        laps: laps.slice(0),
+        settings: settings,
+        summary: summary,
+        savedAt: new Date().toISOString()
+      });
+    }
+
+    if (exportOps.length === 0) {
+      alert("No hay datos (ni operaciones guardadas ni operación actual con laps).");
+      return;
+    }
+
+    let cronoGlobal = (document.getElementById("cronometrista").value || "N/A").trim();
+
+    let csv = "";
+    csv += "Estudio de Tiempos (Multi-operacion)\n";
+    csv += "Cronometrista (captura):," + csvCell(cronoGlobal) + "\n";
+    csv += "Fecha/Hora exportacion:," + csvCell(new Date().toLocaleString()) + "\n\n";
+
+    // 1) DETALLE: cada ciclo por operación
+    csv += "DETALLE (Ciclos por operacion)\n";
+    csv += "Operacion,Ciclo,Tiempo_seg,Tiempo_formato\n";
+    exportOps.forEach(op => {
+      op.laps.forEach((t, i) => {
+        csv += [
+          csvCell(op.operacion),
+          csvCell(i + 1),
+          csvCell(t.toFixed(3)),
+          csvCell(format(t))
+        ].join(",") + "\n";
+      });
+    });
+
+    csv += "\n";
+
+    // 2) RESUMEN por operación (incluye parámetros)
+    csv += "RESUMEN (por operacion)\n";
+    csv += "Operacion,Observaciones,Promedio,FactorWestinghouse,Suplementos_pct,TiempoNormal,TiempoEstandar,Habilidad,Esfuerzo,Condiciones,Consistencia,SuplConstante,SuplVariables_pct\n";
+    exportOps.forEach(op => {
+      let s = op.settings;
+      let varSum = 0;
+      (s.variables || []).forEach(v => varSum += v);
+
+      csv += [
+        csvCell(op.operacion),
+        csvCell(op.laps.length),
+        csvCell(format(op.summary.prom)),
+        csvCell(op.summary.factor.toFixed(2)),
+        csvCell((op.summary.totalSuplementos * 100).toFixed(1) + "%"),
+        csvCell(format(op.summary.normal)),
+        csvCell(format(op.summary.estandar)),
+        csvCell(s.habilidad.toFixed(2)),
+        csvCell(s.esfuerzo.toFixed(2)),
+        csvCell(s.condiciones.toFixed(2)),
+        csvCell(s.consistencia.toFixed(2)),
+        csvCell((s.genero * 100).toFixed(1) + "%"),
+        csvCell((varSum * 100).toFixed(1) + "%")
+      ].join(",") + "\n";
+    });
+
+    let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    let link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = "Estudio_Tiempos_MultiOperacion.csv";
+    link.click();
+  }
+
+  // recalcula si cambias selects/checks
+  document.addEventListener("change", function(e) {
+    if (e.target && (e.target.id === "habilidad" || e.target.id === "esfuerzo" ||
+      e.target.id === "condiciones" || e.target.id === "consistencia" ||
+      e.target.id === "genero" || e.target.classList.contains("var"))) {
+      updateResults();
+    }
+  });
+</script>
 </body>
 </html>
