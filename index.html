@@ -1,251 +1,640 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Cronómetro</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Estudio de Tiempos</title>
 
-<link rel="manifest" href="./manifest.json">
-<meta name="theme-color" content="#0f0f0f">
+  <!-- PWA -->
+  <link rel="manifest" href="./manifest.json" />
 
-<style>
-  #cronometroApp {
-    font-family: Arial, sans-serif;
-    background: #0f0f0f;
-    color: #fff;
-    text-align: center;
-    padding: 20px;
-    max-width: 600px;
-    margin: 20px auto;
-    border-radius: 24px;
-    box-shadow: 0 20px 40px rgba(0,0,0,0.6);
-  }
-  .container { padding: 20px; max-width: 500px; margin: auto; }
-  h1 { font-weight: 300; }
-  input, select {
-    width: 100%;
-    padding: 10px;
-    margin: 5px 0;
-    border-radius: 8px;
-    border: none;
-    background: #1c1c1e;
-    color: white;
-  }
-  button {
-    padding: 16px;
-    margin: 8px 0;
-    border: none;
-    border-radius: 22px;
-    font-weight: 600;
-    font-size: 16px;
-    width: 100%;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    backdrop-filter: blur(10px);
-  }
-  button:active { transform: scale(0.97); opacity: 0.85; }
+  <!-- theme-color dinámico por esquema (workaround PWA) -->
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#0b0d10" media="(prefers-color-scheme: dark)">
 
-  .botones { display: flex; justify-content: center; gap: 18px; margin-top: 25px; }
-  .circle {
-    width: 70px; height: 70px; border-radius: 50%;
-    border: none; font-size: 24px; font-weight: bold;
-    color: white; cursor: pointer; transition: all 0.15s ease;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .circle:active { transform: scale(0.9); opacity: 0.8; }
-  .start { background: #34C759; }
-  .stop { background: #FF3B30; }
-  .lapbtn { background: #0A84FF; }
-  .reset { background: #8E8E93; }
-  .export { background: #BF5AF2; color: white; }
+  <!-- Tipografías modernas -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
 
-  .saveop { background: #FFD60A; color: #111; }
-  .opsCard { margin-top: 18px; background: #1c1c1e; border-radius: 18px; padding: 12px; text-align: left; }
-  .opRow { display: flex; justify-content: space-between; gap: 10px; padding: 10px 6px; border-bottom: 1px solid #2c2c2e; align-items: center; }
-  .opRow:last-child { border-bottom: none; }
-  .opName { font-weight: 600; }
-  .opMeta { color: #d1d1d6; font-size: 13px; }
-  .miniBtns { display: flex; gap: 8px; }
-  .miniBtn { width: auto; padding: 10px 12px; border-radius: 12px; font-size: 13px; }
-  .loadBtn { background: #0A84FF; color: #fff; }
-  .delBtn { background: #FF453A; color: #fff; }
+  <!-- ExcelJS para export XLSX con estilos -->
+  <script src="https://cdn.jsdelivr.net/npm/exceljs@4.4.0/dist/exceljs.min.js"></script>
 
-  .lap { display: flex; justify-content: space-between; padding: 6px; border-bottom: 1px solid #2c2c2e; }
-  .best { color: #30d158; }
-  .worst { color: #ff453a; }
+  <style>
+    :root{
+      --bg: #0b0d10;
+      --text: rgba(255,255,255,.92);
+      --muted: rgba(255,255,255,.65);
+      --stroke: rgba(255,255,255,.12);
+      --surface: rgba(255,255,255,.06);
+      --surface2: rgba(255,255,255,.09);
 
-  .tabla-suplementos {
-    width: 100%;
-    max-width: 420px;
-    margin: 15px auto;
-    border-collapse: collapse;
-    background: #1c1c1e;
-    border-radius: 8px;
-    overflow: hidden;
-    font-size: 14px;
-    text-align: center;
-  }
-  .tabla-suplementos th { background: #2c2c2e; padding: 8px; text-align: center; }
-  .tabla-suplementos td { padding: 8px; border-bottom: 1px solid #2c2c2e; text-align: center; }
-  .tabla-suplementos tr:last-child td { border-bottom: none; }
-  .tabla-suplementos input[type="checkbox"] { transform: scale(1.2); }
+      --accent: #0A84FF;
+      --good: #34C759;
+      --bad: #FF453A;
+      --purple: #BF5AF2;
+      --yellow: #FFD60A;
 
-  .watch-container { position: relative; width: 220px; height: 220px; margin: 40px auto; }
-  .ring { transform: rotate(-90deg); }
-  .ring-bg { fill: none; stroke: #1c1c1e; stroke-width: 12; }
-  .ring-progress {
-    fill: none; stroke: #0A84FF; stroke-width: 12;
-    stroke-linecap: round; stroke-dasharray: 597; stroke-dashoffset: 597;
-    transition: stroke-dashoffset 0.1s linear;
-  }
-  .time {
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 32px; font-weight: 500;
-    letter-spacing: 2px; font-variant-numeric: tabular-nums;
-  }
+      --shadow: 0 18px 45px rgba(0,0,0,.55);
+      --radius: 22px;
+    }
 
-  .results-card {
-    margin-top: 35px;
-    background: #1c1c1e;
-    border-radius: 22px;
-    padding: 20px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    text-align: left;
-  }
-  .result-row {
-    display: flex; justify-content: space-between; align-items: center;
-    padding: 10px 0; font-size: 15px; color: #d1d1d6;
-  }
-  .result-row.big { font-size: 17px; font-weight: 500; }
-  .result-row.final { font-size: 19px; font-weight: 600; color: #0A84FF; }
-  .value { font-variant-numeric: tabular-nums; font-weight: 500; color: #ffffff; }
-  .highlight { color: #34C759; }
-  .divider { height: 1px; background: #2c2c2e; margin: 10px 0; }
-</style>
+    *{ box-sizing: border-box; }
+    html, body { height: 100%; }
+    body{
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(1200px 600px at 20% 0%, rgba(10,132,255,.18), transparent 60%),
+        radial-gradient(900px 500px at 90% 20%, rgba(191,90,242,.16), transparent 55%),
+        var(--bg);
+      padding: 18px;
+    }
+
+    /* Respeta accesibilidad: reduce motion */
+    @media (prefers-reduced-motion: reduce){
+      *{ animation: none !important; transition: none !important; }
+      html{ scroll-behavior: auto; }
+    }
+
+    /* App container */
+    #cronometroApp{
+      max-width: 640px;
+      margin: 0 auto;
+      border-radius: 26px;
+      padding: 18px;
+      border: 1px solid var(--stroke);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    h1{
+      margin: 6px 0 16px;
+      font-weight: 600;
+      letter-spacing: .2px;
+      text-align: center;
+    }
+
+    .subtle{ color: var(--muted); font-size: 13px; text-align:center; margin-top:-10px; }
+
+    /* Inputs / Selects */
+    .card{
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 14px;
+      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+
+    .grid-2{
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+    @media (max-width: 520px){
+      .grid-2{ grid-template-columns: 1fr; }
+    }
+
+    input, select{
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(15,17,21,.45);
+      color: var(--text);
+      outline: none;
+      transition: border-color .15s ease, transform .15s ease;
+    }
+    input:focus, select:focus{
+      border-color: rgba(10,132,255,.55);
+      box-shadow: 0 0 0 3px rgba(10,132,255,.18);
+    }
+
+    h3{
+      margin: 14px 0 8px;
+      font-size: 14px;
+      letter-spacing: .2px;
+      color: rgba(255,255,255,.82);
+      font-weight: 600;
+    }
+
+    /* Accordion */
+    details{
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      padding: 12px 12px;
+      margin: 10px 0;
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    summary{
+      cursor: pointer;
+      list-style: none;
+      font-weight: 600;
+      color: rgba(255,255,255,.88);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    summary::-webkit-details-marker{ display:none; }
+    .chip{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.78);
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* Tabla suplementos */
+    .tabla-suplementos{
+      width: 100%;
+      border-collapse: collapse;
+      overflow: hidden;
+      border-radius: 16px;
+      background: rgba(15,17,21,.35);
+      border: 1px solid rgba(255,255,255,.10);
+      margin-top: 10px;
+    }
+    .tabla-suplementos th{
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.85);
+      padding: 10px;
+      font-size: 12px;
+      text-align: left;
+    }
+    .tabla-suplementos td{
+      padding: 10px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      font-size: 13px;
+      color: rgba(255,255,255,.80);
+    }
+    .tabla-suplementos input[type="checkbox"]{
+      transform: scale(1.15);
+      accent-color: var(--accent);
+    }
+
+    /* Reloj */
+    .watch-container{
+      position: relative;
+      width: 240px;
+      height: 240px;
+      margin: 22px auto 8px;
+    }
+    .ring{ transform: rotate(-90deg); }
+    .ring-bg{
+      fill: none;
+      stroke: rgba(255,255,255,.08);
+      stroke-width: 12;
+    }
+    .ring-progress{
+      fill: none;
+      stroke: var(--accent);
+      stroke-width: 12;
+      stroke-linecap: round;
+      stroke-dasharray: 597;
+      stroke-dashoffset: 597;
+      transition: stroke-dashoffset 0.08s linear;
+      filter: drop-shadow(0 8px 18px rgba(10,132,255,.25));
+    }
+    .time{
+      position:absolute;
+      top:50%; left:50%;
+      transform: translate(-50%,-50%);
+      font-family: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 34px;
+      font-weight: 600;
+      letter-spacing: 1px;
+      font-variant-numeric: tabular-nums;
+      text-shadow: 0 12px 30px rgba(0,0,0,.55);
+    }
+
+    /* Toolbar flotante */
+    .botones{
+      position: sticky;
+      bottom: 14px;
+      z-index: 10;
+      display: flex;
+      justify-content: center;
+      gap: 14px;
+      margin: 14px auto 6px;
+
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.12);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      box-shadow: var(--shadow);
+      padding: 14px;
+      border-radius: 26px;
+      width: fit-content;
+    }
+
+    .circle{
+      width: 62px;
+      height: 62px;
+      border-radius: 50%;
+      border: none;
+      font-size: 22px;
+      font-weight: 800;
+      color: white;
+      cursor: pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: transform .12s ease, opacity .12s ease, filter .12s ease;
+      box-shadow: 0 10px 18px rgba(0,0,0,.35);
+    }
+    .circle:active{ transform: scale(0.92); opacity: .9; }
+    .circle:focus-visible{
+      outline: 3px solid rgba(10,132,255,.45);
+      outline-offset: 3px;
+    }
+    .start{ background: var(--good); }
+    .stop{ background: var(--bad); }
+    .lapbtn{ background: var(--accent); }
+    .reset{ background: rgba(142,142,147,.85); }
+
+    /* Laps list */
+    .lapsCard{
+      margin-top: 10px;
+      padding: 12px;
+    }
+    .lap{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 10px 10px;
+      border-top: 1px solid rgba(255,255,255,.08);
+      color: rgba(255,255,255,.86);
+      font-size: 13px;
+      animation: pop .18s ease-out;
+    }
+    .lap:first-child{ border-top: none; }
+    @keyframes pop{
+      from{ transform: translateY(6px); opacity: 0; }
+      to{ transform: translateY(0); opacity: 1; }
+    }
+    .best{ color: var(--good); font-weight: 700; }
+    .worst{ color: var(--bad); font-weight: 700; }
+
+    /* Results */
+    .results-card{
+      margin-top: 12px;
+      padding: 16px;
+    }
+    .result-row{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      padding: 10px 0;
+      font-size: 14px;
+      color: rgba(255,255,255,.72);
+    }
+    .value{
+      font-variant-numeric: tabular-nums;
+      font-weight: 600;
+      color: rgba(255,255,255,.93);
+    }
+    .divider{
+      height: 1px;
+      background: rgba(255,255,255,.10);
+      margin: 10px 0;
+    }
+    .big{ font-size: 16px; color: rgba(255,255,255,.85); }
+    .final{ font-size: 18px; color: var(--accent); font-weight: 700; }
+    .highlight{ color: var(--good); }
+
+    /* Ops list */
+    .opsCard{ margin-top: 12px; padding: 14px; text-align:left; }
+    .opRow{
+      display:flex;
+      justify-content: space-between;
+      align-items:center;
+      gap: 10px;
+      padding: 12px 6px;
+      border-top: 1px solid rgba(255,255,255,.08);
+    }
+    .opRow:first-child{ border-top: none; }
+    .opName{ font-weight: 700; }
+    .opMeta{ color: rgba(255,255,255,.65); font-size: 12px; margin-top: 4px; }
+    .miniBtns{ display:flex; gap: 8px; }
+    .miniBtn{
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+      transition: transform .12s ease, opacity .12s ease;
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      box-shadow: 0 10px 18px rgba(0,0,0,.25);
+    }
+    .miniBtn:active{ transform: scale(.96); opacity:.92; }
+    .loadBtn{ background: rgba(10,132,255,.75); color: #fff; }
+    .delBtn{ background: rgba(255,69,58,.75); color: #fff; }
+
+    /* Primary buttons */
+    .btnRow{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    @media (max-width: 520px){ .btnRow{ grid-template-columns: 1fr; } }
+    .btn{
+      width: 100%;
+      padding: 14px 14px;
+      border-radius: 18px;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
+      color: rgba(255,255,255,.92);
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform .12s ease, opacity .12s ease;
+      box-shadow: 0 14px 26px rgba(0,0,0,.35);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    .btn:active{ transform: scale(.98); opacity: .9; }
+    .btn.save{ background: rgba(255,214,10,.85); color: #121212; }
+    .btn.export{ background: rgba(191,90,242,.78); color: #fff; }
+    .btn.export2{ background: rgba(10,132,255,.75); color: #fff; }
+
+    /* Utility */
+    .mt10{ margin-top: 10px; }
+    .mt14{ margin-top: 14px; }
+    .center{ text-align: center; }
+    .glass{ /* alias de card */
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
+    /* Grid 2 columnas para suplementos variables */
+.sup-grid{
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+/* En pantallas chicas baja a 1 columna */
+@media (max-width: 520px){
+  .sup-grid{ grid-template-columns: 1fr; }
+}
+
+/* Item estilo “card” seleccionable */
+.sup-item{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+
+  padding: 12px 12px;
+  border-radius: 16px;
+
+  background: rgba(15,17,21,.35);
+  border: 1px solid rgba(255,255,255,.10);
+  cursor: pointer;
+
+  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+}
+
+.sup-item:active{
+  transform: scale(.99);
+}
+
+.sup-item span{
+  color: rgba(255,255,255,.86);
+  font-size: 13px;
+  line-height: 1.2;
+}
+
+.sup-item small{
+  color: rgba(255,255,255,.60);
+  font-weight: 600;
+}
+
+/* Checkbox modernito */
+.sup-item input[type="checkbox"]{
+  transform: scale(1.15);
+  accent-color: var(--accent);
+}
+
+/* Resaltado cuando está seleccionado */
+.sup-item input[type="checkbox"]:checked{
+  filter: drop-shadow(0 6px 14px rgba(10,132,255,.25));
+}
+
+.sup-item:has(input[type="checkbox"]:checked){
+  background: rgba(10,132,255,.10);
+  border-color: rgba(10,132,255,.35);
+}
+  </style>
 </head>
 
 <body>
-<div id="cronometroApp">
-  <h1>⏱ Estudio de Tiempos</h1>
+  <div id="cronometroApp">
+    <h1>⏱ Estudio de Tiempos</h1>
+    <div class="subtle">Multi‑operación • Guardado automático • Export CSV / XLSX</div>
 
-  <input id="operacion" placeholder="Nombre de la operación">
-  <input id="cronometrista" placeholder="Cronometrista">
+    <!-- Datos generales -->
+    <div class="card mt14">
+      <div class="grid-2">
+        <input id="operacion" placeholder="Nombre de la operación" />
+        <input id="cronometrista" placeholder="Cronometrista" />
+      </div>
+    </div>
 
-  <h3>Westinghouse</h3>
-  <select id="habilidad">
-    <option value="0">Habilidad Normal (0)</option>
-    <option value="0.03">Buena (+0.03)</option>
-    <option value="0.06">Excelente (+0.06)</option>
-    <option value="-0.03">Regular (-0.03)</option>
-    <option value="-0.06">Mala (-0.06)</option>
-  </select>
+    <!-- Ajustes en accordions -->
+    <details class="mt10" open>
+      <summary>
+        Westinghouse
+        <span class="chip">Factor: <span id="factor" class="value">1.00</span></span>
+      </summary>
 
-  <select id="esfuerzo">
-    <option value="0">Esfuerzo Normal (0)</option>
-    <option value="0.04">Alto (+0.04)</option>
-    <option value="-0.04">Bajo (-0.04)</option>
-  </select>
+      <div class="grid-2 mt10">
+        <select id="habilidad">
+          <option value="0">Habilidad Normal (0)</option>
+          <option value="0.03">Buena (+0.03)</option>
+          <option value="0.06">Excelente (+0.06)</option>
+          <option value="-0.03">Regular (-0.03)</option>
+          <option value="-0.06">Mala (-0.06)</option>
+        </select>
 
-  <select id="condiciones">
-    <option value="0">Condiciones Normales (0)</option>
-    <option value="0.03">Buenas (+0.03)</option>
-    <option value="-0.03">Malas (-0.03)</option>
-  </select>
+        <select id="esfuerzo">
+          <option value="0">Esfuerzo Normal (0)</option>
+          <option value="0.04">Alto (+0.04)</option>
+          <option value="-0.04">Bajo (-0.04)</option>
+        </select>
 
-  <select id="consistencia">
-    <option value="0">Consistencia Normal (0)</option>
-    <option value="0.02">Alta (+0.02)</option>
-    <option value="-0.02">Baja (-0.02)</option>
-  </select>
+        <select id="condiciones">
+          <option value="0">Condiciones Normales (0)</option>
+          <option value="0.03">Buenas (+0.03)</option>
+          <option value="-0.03">Malas (-0.03)</option>
+        </select>
 
-  <h3>Suplementos Constantes</h3>
-  <select id="genero">
-    <option value="0.09">Hombre (9%)</option>
-    <option value="0.11">Mujer (11%)</option>
-  </select>
+        <select id="consistencia">
+          <option value="0">Consistencia Normal (0)</option>
+          <option value="0.02">Alta (+0.02)</option>
+          <option value="-0.02">Baja (-0.02)</option>
+        </select>
+      </div>
+    </details>
 
-  <h3>Suplementos Variables</h3>
-  <table class="tabla-suplementos">
-    <thead>
-      <tr><th>Concepto</th><th>Aplicar</th></tr>
-    </thead>
-    <tbody>
-      <tr><td>Trabajo de pie (+3%)</td><td><input type="checkbox" value="0.03" class="var"></td></tr>
-      <tr><td>Postura incómoda (+10%)</td><td><input type="checkbox" value="0.10" class="var"></td></tr>
-      <tr><td>Esfuerzo físico alto (+5%)</td><td><input type="checkbox" value="0.05" class="var"></td></tr>
-      <tr><td>Ambiente caluroso (+4%)</td><td><input type="checkbox" value="0.04" class="var"></td></tr>
-      <tr><td>Alta tensión visual (+3%)</td><td><input type="checkbox" value="0.03" class="var"></td></tr>
-      <tr><td>Monotonía / Fatiga mental (+5%)</td><td><input type="checkbox" value="0.05" class="var"></td></tr>
-    </tbody>
-  </table>
+    <details class="mt10" open>
+  <summary>
+    Suplementos
+    <span class="chip">Total: <span id="suptotal" class="value">0%</span></span>
+  </summary>
 
-  <div class="watch-container">
-    <svg class="ring" width="220" height="220">
-      <circle class="ring-bg" cx="110" cy="110" r="95"></circle>
-      <circle class="ring-progress" cx="110" cy="110" r="95"></circle>
-    </svg>
-    <div class="time" id="display">00:00.00</div>
+  <!-- 1) Genero en una sola línea -->
+  <div class="mt10">
+    <h3 style="margin:0 0 8px;">Constante</h3>
+    <select id="genero">
+      <option value="0.09">Hombre (9%)</option>
+      <option value="0.11">Mujer (11%)</option>
+    </select>
   </div>
 
-  <div class="botones">
-    <button class="circle start" onclick="start()">▶</button>
-    <button class="circle stop" onclick="stop()">⏸</button>
-    <button class="circle lapbtn" onclick="lap()">＋</button>
-    <button class="circle reset" onclick="reset()">⟲</button>
+  <!-- 2) Variables en dos columnas -->
+  <div class="mt14">
+    <h3 style="margin:0 0 10px;">Variables</h3>
+
+    <div class="sup-grid">
+      <label class="sup-item">
+        <span>Trabajo de pie <small>(+3%)</small></span>
+        <input type="checkbox" value="0.03" class="var">
+      </label>
+
+      <label class="sup-item">
+        <span>Postura incómoda <small>(+10%)</small></span>
+        <input type="checkbox" value="0.10" class="var">
+      </label>
+
+      <label class="sup-item">
+        <span>Esfuerzo físico alto <small>(+5%)</small></span>
+        <input type="checkbox" value="0.05" class="var">
+      </label>
+
+      <label class="sup-item">
+        <span>Ambiente caluroso <small>(+4%)</small></span>
+        <input type="checkbox" value="0.04" class="var">
+      </label>
+
+      <label class="sup-item">
+        <span>Alta tensión visual <small>(+3%)</small></span>
+        <input type="checkbox" value="0.03" class="var">
+      </label>
+
+      <label class="sup-item">
+        <span>Monotonía / Fatiga mental <small>(+5%)</small></span>
+        <input type="checkbox" value="0.05" class="var">
+      </label>
+    </div>
   </div>
+    <!-- Reloj -->
+    <div class="watch-container">
+      <svg class="ring" width="240" height="240">
+        <circle class="ring-bg" cx="120" cy="120" r="95"></circle>
+        <circle class="ring-progress" cx="120" cy="120" r="95"></circle>
+      </svg>
+      <div class="time" id="display">00:00.00</div>
+    </div>
 
-  <div id="laps"></div>
+    <!-- Toolbar controles -->
+    <div class="botones">
+      <button class="circle start" onclick="start()">▶</button>
+      <button class="circle stop" onclick="stop()">⏸</button>
+      <button class="circle lapbtn" onclick="lap()">＋</button>
+      <button class="circle reset" onclick="reset()">⟲</button>
+    </div>
 
-  <div class="results-card">
-    <div class="result-row">
-      <span>Promedio Observado</span>
-      <span id="prom" class="value">00:00.00</span>
+    <!-- Laps -->
+    <div id="lapsCard" class="lapsCard glass">
+      <div class="chip" style="margin-bottom:8px;">
+        Prom: <span id="prom" class="value">00:00.00</span>
+      </div>
+      <div id="laps"></div>
+      <div class="center" style="margin-top:8px; color: rgba(255,255,255,.55); font-size:12px;">
+        (Máximo 10 observaciones por operación)
+      </div>
     </div>
-    <div class="result-row">
-      <span>Factor Westinghouse</span>
-      <span id="factor" class="value highlight">1.00</span>
+
+    <!-- Resultados -->
+    <div class="results-card glass mt10">
+      <div class="result-row">
+        <span>Promedio Observado</span>
+        <span id="prom2" class="value">00:00.00</span>
+      </div>
+
+      <div class="result-row">
+        <span>Factor Westinghouse</span>
+        <span id="factor2" class="value highlight">1.00</span>
+      </div>
+
+      <div class="result-row">
+        <span>Total Suplementos</span>
+        <span id="suptotal2" class="value">0%</span>
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="result-row big">
+        <span>Tiempo Normal</span>
+        <span id="normal" class="value">00:00.00</span>
+      </div>
+
+      <div class="result-row big final">
+        <span>Tiempo Estándar</span>
+        <span id="estandar" class="value">00:00.00</span>
+      </div>
     </div>
-    <div class="result-row">
-      <span>Total Suplementos</span>
-      <span id="suptotal" class="value">0%</span>
+
+    <!-- Guardar / Exportar -->
+    <div class="btnRow">
+      <button class="btn save" onclick="saveOperation()">Guardar Operación</button>
+      <button class="btn export" onclick="exportCSV()">Exportar CSV</button>
     </div>
-    <div class="divider"></div>
-    <div class="result-row big">
-      <span>Tiempo Normal</span>
-      <span id="normal" class="value">00:00.00</span>
+    <div class="btnRow">
+      <button class="btn export2" onclick="exportXLSX_ExcelJS()">Exportar XLSX (pro)</button>
+      <button class="btn" onclick="clearAllOperations()">Nuevo Estudio</button>
     </div>
-    <div class="result-row big final">
-      <span>Tiempo Estándar</span>
-      <span id="estandar" class="value">00:00.00</span>
+
+    <!-- Operaciones guardadas -->
+    <div class="opsCard glass mt10">
+      <div style="font-weight:800; margin-bottom:10px;">📦 Operaciones guardadas</div>
+      <div id="opsList" style="min-height:20px; color: rgba(255,255,255,.70);">(Aún no guardas operaciones)</div>
     </div>
   </div>
-
-  <button class="saveop" onclick="saveOperation()">Guardar Operación</button>
-
-  <div class="opsCard">
-    <div style="font-weight:700; margin-bottom:10px;">📦 Operaciones guardadas</div>
-    <div id="opsList" style="min-height:20px; color:#d1d1d6;">(Aún no guardas operaciones)</div>
-  </div>
-
-  <button class="export" onclick="exportExcel()">Exportar Excel</button>
-</div>
 
 <script>
-  // ---------------------------
+  // ==========================
   // Cronómetro (operación actual)
-  // ---------------------------
+  // ==========================
   let startTime = 0;
   let elapsed = 0;
   let interval = null;
   let laps = [];
   let lastLapTime = 0;
 
-  // ---------------------------
-  // Multi-operaciones (guardadas)
-  // ---------------------------
-  let savedOps = []; // { id, operacion, cronometrista, laps[], settings{}, summary{} }
+  // ==========================
+  // Multi-operaciones + persistencia
+  // ==========================
+  let savedOps = [];
   let opAutoId = 1;
+  const LS_KEY = "estudioTiempos_savedOps_v2";
+
+  function haptic(ms){ if (navigator.vibrate) navigator.vibrate(ms); }
 
   function format(seg) {
     let m = Math.floor(seg / 60);
@@ -256,29 +645,32 @@
 
   function start() {
     if (interval) return;
-    startTime = Date.now() - elapsed;
+    haptic(10);
 
+    startTime = Date.now() - elapsed;
     interval = setInterval(() => {
       elapsed = Date.now() - startTime;
       let seconds = elapsed / 1000;
 
       document.getElementById("display").innerText = format(seconds);
 
-      // anillo
       let maxTime = 60;
       let progress = (seconds % maxTime) / maxTime;
       let circumference = 597;
+
       document.querySelector(".ring-progress").style.strokeDashoffset =
         circumference - (circumference * progress);
     }, 10);
   }
 
   function stop() {
+    haptic(10);
     clearInterval(interval);
     interval = null;
   }
 
   function reset() {
+    haptic(18);
     stop();
     elapsed = 0;
     laps = [];
@@ -293,6 +685,8 @@
       alert("Máximo 10 observaciones");
       return;
     }
+    haptic(12);
+
     let parcial = (elapsed - lastLapTime) / 1000;
     laps.push(parcial);
     lastLapTime = elapsed;
@@ -334,14 +728,7 @@
       variables.push(parseFloat(el.value));
     });
 
-    return {
-      habilidad: habilidad,
-      esfuerzo: esfuerzo,
-      condiciones: condiciones,
-      consistencia: consistencia,
-      genero: genero,
-      variables: variables
-    };
+    return { habilidad, esfuerzo, condiciones, consistencia, genero, variables };
   }
 
   function applySettingsSnapshot(s) {
@@ -351,7 +738,6 @@
     document.getElementById("consistencia").value = String(s.consistencia);
     document.getElementById("genero").value = String(s.genero);
 
-    // checkboxes
     document.querySelectorAll(".var").forEach(el => el.checked = false);
     if (s.variables && s.variables.length) {
       document.querySelectorAll(".var").forEach(el => {
@@ -363,13 +749,10 @@
 
   function calcSummary(lapsArr, settings) {
     if (!lapsArr || lapsArr.length === 0) {
-      return {
-        prom: 0, factor: 1, totalSuplementos: 0, normal: 0, estandar: 0
-      };
+      return { prom: 0, factor: 1, totalSuplementos: 0, normal: 0, estandar: 0 };
     }
 
     let prom = lapsArr.reduce((a,b) => a + b, 0) / lapsArr.length;
-
     let factor = 1 + settings.habilidad + settings.esfuerzo + settings.condiciones + settings.consistencia;
     let normal = prom * factor;
 
@@ -380,20 +763,20 @@
     let totalSuplementos = constantes + variablesSum;
     let estandar = normal * (1 + totalSuplementos);
 
-    return {
-      prom: prom,
-      factor: factor,
-      totalSuplementos: totalSuplementos,
-      normal: normal,
-      estandar: estandar
-    };
+    return { prom, factor, totalSuplementos, normal, estandar };
   }
 
   function updateResults() {
     if (laps.length === 0) {
       document.getElementById("prom").innerText = "00:00.00";
+      document.getElementById("prom2").innerText = "00:00.00";
+
       document.getElementById("factor").innerText = "1.00";
+      document.getElementById("factor2").innerText = "1.00";
+
       document.getElementById("suptotal").innerText = "0%";
+      document.getElementById("suptotal2").innerText = "0%";
+
       document.getElementById("normal").innerText = "00:00.00";
       document.getElementById("estandar").innerText = "00:00.00";
       return;
@@ -403,26 +786,48 @@
     let sum = calcSummary(laps, settings);
 
     document.getElementById("prom").innerText = format(sum.prom);
+    document.getElementById("prom2").innerText = format(sum.prom);
+
     document.getElementById("factor").innerText = sum.factor.toFixed(2);
+    document.getElementById("factor2").innerText = sum.factor.toFixed(2);
+
     document.getElementById("suptotal").innerText = (sum.totalSuplementos * 100).toFixed(1) + "%";
+    document.getElementById("suptotal2").innerText = (sum.totalSuplementos * 100).toFixed(1) + "%";
+
     document.getElementById("normal").innerText = format(sum.normal);
     document.getElementById("estandar").innerText = format(sum.estandar);
   }
 
-  // ---------------------------
-  // Multi-operaciones: Guardar / listar / cargar / eliminar
-  // ---------------------------
-  function saveOperation() {
-    if (laps.length === 0) {
-      alert("No hay observaciones (laps) para guardar.");
-      return;
+  // ==========================
+  // Persistencia localStorage
+  // ==========================
+  function saveToLocalStorage() {
+    localStorage.setItem(LS_KEY, JSON.stringify(savedOps));
+  }
+
+  function loadFromLocalStorage() {
+    let raw = localStorage.getItem(LS_KEY);
+    if (!raw) return;
+
+    try {
+      savedOps = JSON.parse(raw) || [];
+      let maxId = 0;
+      savedOps.forEach(op => { if (op.id > maxId) maxId = op.id; });
+      opAutoId = maxId + 1;
+    } catch (e) {
+      console.error("Error leyendo localStorage", e);
+      savedOps = [];
     }
+  }
+
+  // ==========================
+  // Multi-operaciones: Guardar / Listar / Cargar / Eliminar
+  // ==========================
+  function saveOperation() {
+    if (laps.length === 0) { alert("No hay observaciones (laps) para guardar."); return; }
 
     let operacion = (document.getElementById("operacion").value || "").trim();
-    if (!operacion) {
-      alert("Escribe el nombre de la operación antes de guardar.");
-      return;
-    }
+    if (!operacion) { alert("Escribe el nombre de la operación antes de guardar."); return; }
 
     let crono = (document.getElementById("cronometrista").value || "N/A").trim();
     let settings = getSettingsSnapshot();
@@ -430,19 +835,19 @@
 
     savedOps.push({
       id: opAutoId++,
-      operacion: operacion,
+      operacion,
       cronometrista: crono,
-      laps: laps.slice(0), // copia
-      settings: settings,
-      summary: summary,
+      laps: laps.slice(0),
+      settings,
+      summary,
       savedAt: new Date().toISOString()
     });
 
+    saveToLocalStorage();
     renderOpsList();
 
-    // Prepara para la siguiente operación (limpia solo tiempos/laps)
+    // prepara siguiente operación
     reset();
-    // opcional: limpiar nombre de operación
     document.getElementById("operacion").value = "";
   }
 
@@ -467,33 +872,44 @@
           </div>
         </div>`;
     });
-
     el.innerHTML = html;
   }
 
   function loadOp(id) {
     let idx = savedOps.findIndex(x => x.id === id);
     if (idx < 0) return;
+
     let op = savedOps[idx];
 
-    // carga en pantalla para editar y vuelve a medir si quieres
     document.getElementById("operacion").value = op.operacion;
     document.getElementById("cronometrista").value = op.cronometrista;
     applySettingsSnapshot(op.settings);
 
-    // pasa laps al “actual”
     laps = op.laps.slice(0);
-    lastLapTime = elapsed; // por si sigues cronometrando continuo, evitamos salto
+    lastLapTime = 0;
+    elapsed = 0; // al cargar, reseteamos el cronómetro visual
+    document.getElementById("display").innerText = "00:00.00";
+    document.querySelector(".ring-progress").style.strokeDashoffset = 597;
+
     renderLaps();
     updateResults();
 
-    // lo quitamos de guardadas (para evitar duplicados al re-guardar)
+    // quitar de guardadas para evitar duplicado al re-guardar
     savedOps.splice(idx, 1);
+    saveToLocalStorage();
     renderOpsList();
   }
 
   function deleteOp(id) {
     savedOps = savedOps.filter(x => x.id !== id);
+    saveToLocalStorage();
+    renderOpsList();
+  }
+
+  function clearAllOperations() {
+    if (!confirm("¿Borrar todas las operaciones guardadas?")) return;
+    savedOps = [];
+    localStorage.removeItem(LS_KEY);
     renderOpsList();
   }
 
@@ -506,18 +922,11 @@
       .replace(/'/g, "&#039;");
   }
 
-  // ---------------------------
-  // Export CSV (Excel)
-  // ---------------------------
-  function csvCell(v) {
-    let s = String(v ?? "");
-    if (s.indexOf('"') >= 0) s = s.replace(/"/g, '""');
-    if (/[",\n\r]/.test(s)) s = '"' + s + '"';
-    return s;
-  }
-
-  function exportExcel() {
-    // Incluye lo guardado + lo actual (si hay)
+  // ==========================
+  // Export CSV (rápido)
+  // ==========================
+  function exportCSV() {
+    // export guardadas + actual si hay
     let exportOps = savedOps.slice(0);
 
     if (laps.length > 0) {
@@ -525,69 +934,25 @@
       let crono = (document.getElementById("cronometrista").value || "N/A").trim();
       let settings = getSettingsSnapshot();
       let summary = calcSummary(laps, settings);
-
-      exportOps.push({
-        id: 0,
-        operacion: operacion,
-        cronometrista: crono,
-        laps: laps.slice(0),
-        settings: settings,
-        summary: summary,
-        savedAt: new Date().toISOString()
-      });
+      exportOps.push({ id: 0, operacion, cronometrista: crono, laps: laps.slice(0), settings, summary, savedAt: new Date().toISOString() });
     }
 
-    if (exportOps.length === 0) {
-      alert("No hay datos (ni operaciones guardadas ni operación actual con laps).");
-      return;
-    }
-
-    let cronoGlobal = (document.getElementById("cronometrista").value || "N/A").trim();
+    if (exportOps.length === 0) { alert("No hay datos para exportar."); return; }
 
     let csv = "";
-    csv += "Estudio de Tiempos (Multi-operacion)\n";
-    csv += "Cronometrista (captura):," + csvCell(cronoGlobal) + "\n";
-    csv += "Fecha/Hora exportacion:," + csvCell(new Date().toLocaleString()) + "\n\n";
+    csv += "Estudio de Tiempos (Multi-operación)\n";
+    csv += "Fecha/Hora exportación:," + new Date().toLocaleString() + "\n\n";
 
-    // 1) DETALLE: cada ciclo por operación
-    csv += "DETALLE (Ciclos por operacion)\n";
+    csv += "DETALLE (Ciclos por operación)\n";
     csv += "Operacion,Ciclo,Tiempo_seg,Tiempo_formato\n";
+    exportOps.forEach(op => op.laps.forEach((t,i) => {
+      csv += `${op.operacion},${i+1},${t.toFixed(3)},${format(t)}\n`;
+    }));
+
+    csv += "\nRESUMEN (por operación)\n";
+    csv += "Operacion,Observaciones,Promedio,FactorWestinghouse,Suplementos_pct,TiempoNormal,TiempoEstandar\n";
     exportOps.forEach(op => {
-      op.laps.forEach((t, i) => {
-        csv += [
-          csvCell(op.operacion),
-          csvCell(i + 1),
-          csvCell(t.toFixed(3)),
-          csvCell(format(t))
-        ].join(",") + "\n";
-      });
-    });
-
-    csv += "\n";
-
-    // 2) RESUMEN por operación (incluye parámetros)
-    csv += "RESUMEN (por operacion)\n";
-    csv += "Operacion,Observaciones,Promedio,FactorWestinghouse,Suplementos_pct,TiempoNormal,TiempoEstandar,Habilidad,Esfuerzo,Condiciones,Consistencia,SuplConstante,SuplVariables_pct\n";
-    exportOps.forEach(op => {
-      let s = op.settings;
-      let varSum = 0;
-      (s.variables || []).forEach(v => varSum += v);
-
-      csv += [
-        csvCell(op.operacion),
-        csvCell(op.laps.length),
-        csvCell(format(op.summary.prom)),
-        csvCell(op.summary.factor.toFixed(2)),
-        csvCell((op.summary.totalSuplementos * 100).toFixed(1) + "%"),
-        csvCell(format(op.summary.normal)),
-        csvCell(format(op.summary.estandar)),
-        csvCell(s.habilidad.toFixed(2)),
-        csvCell(s.esfuerzo.toFixed(2)),
-        csvCell(s.condiciones.toFixed(2)),
-        csvCell(s.consistencia.toFixed(2)),
-        csvCell((s.genero * 100).toFixed(1) + "%"),
-        csvCell((varSum * 100).toFixed(1) + "%")
-      ].join(",") + "\n";
+      csv += `${op.operacion},${op.laps.length},${format(op.summary.prom)},${op.summary.factor.toFixed(2)},${(op.summary.totalSuplementos*100).toFixed(1)}%,${format(op.summary.normal)},${format(op.summary.estandar)}\n`;
     });
 
     let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -597,14 +962,147 @@
     link.click();
   }
 
-  // recalcula si cambias selects/checks
+  // ==========================
+  // Export XLSX real (ExcelJS) con estilo
+  // ==========================
+  async function exportXLSX_ExcelJS() {
+    let exportOps = savedOps.slice(0);
+
+    if (laps.length > 0) {
+      let operacion = (document.getElementById("operacion").value || "").trim() || "N/A";
+      let crono = (document.getElementById("cronometrista").value || "N/A").trim();
+      let settings = getSettingsSnapshot();
+      let summary = calcSummary(laps, settings);
+      exportOps.push({ id: 0, operacion, cronometrista: crono, laps: laps.slice(0), settings, summary, savedAt: new Date().toISOString() });
+    }
+
+    if (exportOps.length === 0) { alert("No hay datos para exportar."); return; }
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = "Estudio de Tiempos";
+    wb.created = new Date();
+
+    // estilos header
+    const headerFill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F4E79" } };
+    const headerFont = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
+    const headerAlign = { vertical: "middle", horizontal: "center", wrapText: true };
+    const thinBorder = {
+      top: { style: "thin", color: { argb: "FFBFBFBF" } },
+      left: { style: "thin", color: { argb: "FFBFBFBF" } },
+      bottom: { style: "thin", color: { argb: "FFBFBFBF" } },
+      right: { style: "thin", color: { argb: "FFBFBFBF" } }
+    };
+
+    function styleHeaderRow(row){
+      row.height = 20;
+      row.eachCell(cell => {
+        cell.fill = headerFill;
+        cell.font = headerFont;
+        cell.alignment = headerAlign;
+        cell.border = thinBorder;
+      });
+    }
+
+    // DETALLE
+    const wsD = wb.addWorksheet("Detalle", { views: [{ state: "frozen", ySplit: 1 }] });
+    wsD.columns = [
+      { header: "Operacion", key: "operacion", width: 28 },
+      { header: "Ciclo", key: "ciclo", width: 8 },
+      { header: "Tiempo (seg)", key: "seg", width: 12 },
+      { header: "Tiempo (formato)", key: "fmt", width: 16 }
+    ];
+    styleHeaderRow(wsD.getRow(1));
+    wsD.autoFilter = "A1:D1";
+
+    exportOps.forEach(op => {
+      op.laps.forEach((t, i) => {
+        wsD.addRow({
+          operacion: op.operacion,
+          ciclo: i + 1,
+          seg: Number(t.toFixed(3)),
+          fmt: format(t)
+        });
+      });
+    });
+
+    wsD.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      row.eachCell((cell, colNumber) => {
+        cell.border = thinBorder;
+        if (colNumber === 2) { cell.alignment = { vertical: "middle", horizontal: "center" }; cell.numFmt = "0"; }
+        else if (colNumber === 3) { cell.alignment = { vertical: "middle", horizontal: "right" }; cell.numFmt = "0.000"; }
+        else { cell.alignment = { vertical: "middle", horizontal: "left" }; }
+      });
+    });
+
+    // RESUMEN
+    const wsR = wb.addWorksheet("Resumen", { views: [{ state: "frozen", ySplit: 1 }] });
+    wsR.columns = [
+      { header: "Operacion", key: "operacion", width: 28 },
+      { header: "Observaciones", key: "obs", width: 14 },
+      { header: "Promedio", key: "prom", width: 14 },
+      { header: "Factor Westinghouse", key: "factor", width: 18 },
+      { header: "Suplementos %", key: "sup", width: 14 },
+      { header: "Tiempo Normal", key: "normal", width: 14 },
+      { header: "Tiempo Estandar", key: "estandar", width: 14 }
+    ];
+    styleHeaderRow(wsR.getRow(1));
+    wsR.autoFilter = "A1:G1";
+
+    exportOps.forEach(op => {
+      wsR.addRow({
+        operacion: op.operacion,
+        obs: op.laps.length,
+        prom: format(op.summary.prom),
+        factor: Number(op.summary.factor.toFixed(2)),
+        sup: Number((op.summary.totalSuplementos * 100).toFixed(1)),
+        normal: format(op.summary.normal),
+        estandar: format(op.summary.estandar)
+      });
+    });
+
+    wsR.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      row.eachCell((cell, colNumber) => {
+        cell.border = thinBorder;
+        if (colNumber === 2) { cell.alignment = { vertical: "middle", horizontal: "center" }; cell.numFmt = "0"; }
+        else if (colNumber === 4) { cell.alignment = { vertical: "middle", horizontal: "right" }; cell.numFmt = "0.00"; }
+        else if (colNumber === 5) { cell.alignment = { vertical: "middle", horizontal: "right" }; cell.numFmt = '0.0"%"'; }
+        else { cell.alignment = { vertical: "middle", horizontal: "left" }; }
+      });
+    });
+
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    });
+
+    const fileName = "Estudio_Tiempos_MultiOperacion.xlsx";
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // Recalcular si cambias selects/checks
   document.addEventListener("change", function(e) {
-    if (e.target && (e.target.id === "habilidad" || e.target.id === "esfuerzo" ||
+    if (e.target && (
+      e.target.id === "habilidad" || e.target.id === "esfuerzo" ||
       e.target.id === "condiciones" || e.target.id === "consistencia" ||
-      e.target.id === "genero" || e.target.classList.contains("var"))) {
+      e.target.id === "genero" || e.target.classList.contains("var")
+    )) {
       updateResults();
     }
   });
+
+  // Init
+  loadFromLocalStorage();
+  renderOpsList();
+  updateResults();
 </script>
 </body>
 </html>
