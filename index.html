@@ -380,11 +380,12 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
-    /* Grid 2 columnas para suplementos variables */
+  
+/* Grid de suplementos variables */
 .sup-grid{
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 12px;
 }
 
 /* En pantallas chicas baja a 1 columna */
@@ -394,19 +395,19 @@
 
 /* Item estilo “card” seleccionable */
 .sup-item{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto; /* texto | checkbox */
+  align-items: start;
   gap: 12px;
 
-  padding: 12px 12px;
-  border-radius: 16px;
+  padding: 14px;
+  border-radius: 18px;
 
   background: rgba(15,17,21,.35);
-  border: 1px solid rgba(255,255,255,.10);
-  cursor: pointer;
+  border: 1px solid rgba(255,255,255,.12);
 
-  transition: transform .12s ease, border-color .12s ease, background .12s ease;
+  cursor: pointer;
+  transition: background .15s ease, border-color .15s ease;
 }
 
 .sup-item:active{
@@ -414,18 +415,29 @@
 }
 
 .sup-item span{
-  color: rgba(255,255,255,.86);
-  font-size: 13px;
-  line-height: 1.2;
+  min-width: 0;                 /* 🔥 CLAVE */
+  white-space: normal;
+  word-break: normal;
+  overflow-wrap: break-word;
+
+  font-size: 14px;
+  line-height: 1.25;
+  color: rgba(255,255,255,.9);
 }
 
 .sup-item small{
-  color: rgba(255,255,255,.60);
+  display: block;
+  margin-top: 4px;
+  font-size: 12px;
+  color: rgba(255,255,255,.6);
   font-weight: 600;
 }
 
+
 /* Checkbox modernito */
 .sup-item input[type="checkbox"]{
+  flex-shrink: 0;
+  margin-top: 2px;
   transform: scale(1.15);
   accent-color: var(--accent);
 }
@@ -438,6 +450,10 @@
 .sup-item:has(input[type="checkbox"]:checked){
   background: rgba(10,132,255,.10);
   border-color: rgba(10,132,255,.35);
+}
+#cronometroApp{
+  padding-left: calc(18px + env(safe-area-inset-left));
+  padding-right: calc(18px + env(safe-area-inset-right));
 }
   </style>
 </head>
