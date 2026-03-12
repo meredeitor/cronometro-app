@@ -1,22 +1,23 @@
 {
-  "name": "Cronómetro de Tiempo Estándar",
-  "short_name": "Cronómetro",
-  "description": "Aplicación de cronómetro para cálculo de tiempo estándar.",
+  "name": "LeanTakt",
+  "short_name": "LeanTakt",
+  "description": "Aplicación web para estudio de tiempos, cálculo de Takt Time, balanceo de líneas, análisis de cuellos de botella y visualización Heijunka y Yamazumi.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
+  "categories": ["productivity", "business", "utilities"],
   "icons": [
     {
-      "src": "./icons/icon-192.png",
+      "src": "./icons/leantakt-192.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "./icons/icon-512.png",
+      "src": "./icons/leantakt-512.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
