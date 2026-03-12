@@ -7,8 +7,6 @@
 
   <!-- PWA -->
   <link rel="manifest" href="./manifest.json" />
-
-  <!-- theme-color dinámico por esquema (workaround PWA) -->
   <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#0b0d10" media="(prefers-color-scheme: dark)">
 
@@ -28,17 +26,14 @@
       --stroke: rgba(255,255,255,.12);
       --surface: rgba(255,255,255,.06);
       --surface2: rgba(255,255,255,.09);
-
       --accent: #0A84FF;
       --good: #34C759;
       --bad: #FF453A;
       --purple: #BF5AF2;
       --yellow: #FFD60A;
-
       --shadow: 0 18px 45px rgba(0,0,0,.55);
       --radius: 22px;
     }
-
     *{ box-sizing: border-box; }
     html, body { height: 100%; }
     body{
@@ -51,8 +46,6 @@
         var(--bg);
       padding: 18px;
     }
-
-    /* Respeta accesibilidad: reduce motion */
     @media (prefers-reduced-motion: reduce){
       *{ animation: none !important; transition: none !important; }
       html{ scroll-behavior: auto; }
@@ -60,7 +53,7 @@
 
     /* App container */
     #cronometroApp{
-      max-width: 640px;
+      max-width: 980px;
       margin: 0 auto;
       border-radius: 26px;
       padding: 18px;
@@ -69,6 +62,8 @@
       box-shadow: var(--shadow);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
+      padding-left: calc(18px + env(safe-area-inset-left));
+      padding-right: calc(18px + env(safe-area-inset-right));
     }
 
     h1{
@@ -77,10 +72,9 @@
       letter-spacing: .2px;
       text-align: center;
     }
-
     .subtle{ color: var(--muted); font-size: 13px; text-align:center; margin-top:-10px; }
 
-    /* Inputs / Selects */
+    /* Cards */
     .card{
       background: var(--surface);
       border: 1px solid var(--stroke);
@@ -90,15 +84,19 @@
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
     }
+    .glass{
+      background: var(--surface);
+      border: 1px solid var(--stroke);
+      border-radius: var(--radius);
+      box-shadow: 0 10px 25px rgba(0,0,0,.35);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+    }
 
-    .grid-2{
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    @media (max-width: 520px){
-      .grid-2{ grid-template-columns: 1fr; }
-    }
+    .grid-2{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .grid-3{ display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+    @media (max-width: 860px){ .grid-3{ grid-template-columns: 1fr; } }
+    @media (max-width: 520px){ .grid-2{ grid-template-columns: 1fr; } }
 
     input, select{
       width: 100%;
@@ -114,14 +112,9 @@
       border-color: rgba(10,132,255,.55);
       box-shadow: 0 0 0 3px rgba(10,132,255,.18);
     }
+    input::placeholder{ color: rgba(255,255,255,.45); }
 
-    h3{
-      margin: 14px 0 8px;
-      font-size: 14px;
-      letter-spacing: .2px;
-      color: rgba(255,255,255,.82);
-      font-weight: 600;
-    }
+    h3{ margin: 14px 0 8px; font-size: 14px; letter-spacing: .2px; color: rgba(255,255,255,.82); font-weight: 600; }
 
     /* Accordion */
     details{
@@ -144,6 +137,7 @@
       gap: 10px;
     }
     summary::-webkit-details-marker{ display:none; }
+
     .chip{
       display:inline-flex;
       align-items:center;
@@ -158,57 +152,33 @@
       white-space: nowrap;
     }
 
-    /* Tabla suplementos */
-    .tabla-suplementos{
-      width: 100%;
-      border-collapse: collapse;
-      overflow: hidden;
-      border-radius: 16px;
+    /* Suplementos */
+    .sup-grid{ display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+    @media (max-width: 520px){ .sup-grid{ grid-template-columns: 1fr; } }
+    .sup-item{
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: start;
+      gap: 12px;
+      padding: 14px;
+      border-radius: 18px;
       background: rgba(15,17,21,.35);
-      border: 1px solid rgba(255,255,255,.10);
-      margin-top: 10px;
+      border: 1px solid rgba(255,255,255,.12);
+      cursor: pointer;
+      transition: background .15s ease, border-color .15s ease;
     }
-    .tabla-suplementos th{
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.85);
-      padding: 10px;
-      font-size: 12px;
-      text-align: left;
-    }
-    .tabla-suplementos td{
-      padding: 10px;
-      border-top: 1px solid rgba(255,255,255,.08);
-      font-size: 13px;
-      color: rgba(255,255,255,.80);
-    }
-    .tabla-suplementos input[type="checkbox"]{
-      transform: scale(1.15);
-      accent-color: var(--accent);
-    }
+    .sup-item:active{ transform: scale(.99); }
+    .sup-item span{ min-width: 0; white-space: normal; overflow-wrap: break-word; font-size: 14px; line-height: 1.25; color: rgba(255,255,255,.9); }
+    .sup-item small{ display:block; margin-top:4px; font-size: 12px; color: rgba(255,255,255,.6); font-weight: 600; }
+    .sup-item input[type="checkbox"]{ flex-shrink: 0; margin-top: 2px; transform: scale(1.15); accent-color: var(--accent); }
+    .sup-item input[type="checkbox"]:checked{ filter: drop-shadow(0 6px 14px rgba(10,132,255,.25)); }
+    .sup-item:has(input[type="checkbox"]:checked){ background: rgba(10,132,255,.10); border-color: rgba(10,132,255,.35); }
 
     /* Reloj */
-    .watch-container{
-      position: relative;
-      width: 240px;
-      height: 240px;
-      margin: 22px auto 8px;
-    }
+    .watch-container{ position: relative; width: 240px; height: 240px; margin: 22px auto 8px; }
     .ring{ transform: rotate(-90deg); }
-    .ring-bg{
-      fill: none;
-      stroke: rgba(255,255,255,.08);
-      stroke-width: 12;
-    }
-    .ring-progress{
-      fill: none;
-      stroke: var(--accent);
-      stroke-width: 12;
-      stroke-linecap: round;
-      stroke-dasharray: 597;
-      stroke-dashoffset: 597;
-      transition: stroke-dashoffset 0.08s linear;
-      filter: drop-shadow(0 8px 18px rgba(10,132,255,.25));
-    }
+    .ring-bg{ fill:none; stroke: rgba(255,255,255,.08); stroke-width: 12; }
+    .ring-progress{ fill:none; stroke: var(--accent); stroke-width: 12; stroke-linecap: round; stroke-dasharray: 597; stroke-dashoffset: 597; transition: stroke-dashoffset 0.08s linear; filter: drop-shadow(0 8px 18px rgba(10,132,255,.25)); }
     .time{
       position:absolute;
       top:50%; left:50%;
@@ -221,16 +191,15 @@
       text-shadow: 0 12px 30px rgba(0,0,0,.55);
     }
 
-    /* Toolbar flotante */
+    /* Toolbar */
     .botones{
       position: sticky;
       bottom: 14px;
       z-index: 10;
-      display: flex;
+      display:flex;
       justify-content: center;
       gap: 14px;
       margin: 14px auto 6px;
-
       background: rgba(255,255,255,.06);
       border: 1px solid rgba(255,255,255,.12);
       backdrop-filter: blur(14px);
@@ -240,228 +209,151 @@
       border-radius: 26px;
       width: fit-content;
     }
-
     .circle{
-      width: 62px;
-      height: 62px;
+      width: 62px; height: 62px;
       border-radius: 50%;
-      border: none;
+      border:none;
       font-size: 22px;
       font-weight: 800;
       color: white;
       cursor: pointer;
-      display:flex;
-      align-items:center;
-      justify-content:center;
+      display:flex; align-items:center; justify-content:center;
       transition: transform .12s ease, opacity .12s ease, filter .12s ease;
       box-shadow: 0 10px 18px rgba(0,0,0,.35);
     }
     .circle:active{ transform: scale(0.92); opacity: .9; }
-    .circle:focus-visible{
-      outline: 3px solid rgba(10,132,255,.45);
-      outline-offset: 3px;
-    }
+    .circle:focus-visible{ outline: 3px solid rgba(10,132,255,.45); outline-offset: 3px; }
     .start{ background: var(--good); }
     .stop{ background: var(--bad); }
     .lapbtn{ background: var(--accent); }
     .reset{ background: rgba(142,142,147,.85); }
 
-    /* Laps list */
-    .lapsCard{
-      margin-top: 10px;
-      padding: 12px;
-    }
-    .lap{
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      padding: 10px 10px;
-      border-top: 1px solid rgba(255,255,255,.08);
-      color: rgba(255,255,255,.86);
-      font-size: 13px;
-      animation: pop .18s ease-out;
-    }
-    .lap:first-child{ border-top: none; }
-    @keyframes pop{
-      from{ transform: translateY(6px); opacity: 0; }
-      to{ transform: translateY(0); opacity: 1; }
-    }
+    /* Laps */
+    .lapsCard{ margin-top: 10px; padding: 12px; }
+    .lap{ display:flex; justify-content: space-between; align-items:center; padding: 10px 10px; border-top: 1px solid rgba(255,255,255,.08); color: rgba(255,255,255,.86); font-size: 13px; animation: pop .18s ease-out; }
+    .lap:first-child{ border-top:none; }
+    @keyframes pop{ from{ transform: translateY(6px); opacity:0; } to{ transform: translateY(0); opacity:1; } }
     .best{ color: var(--good); font-weight: 700; }
     .worst{ color: var(--bad); font-weight: 700; }
 
     /* Results */
-    .results-card{
-      margin-top: 12px;
-      padding: 16px;
-    }
-    .result-row{
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      padding: 10px 0;
-      font-size: 14px;
-      color: rgba(255,255,255,.72);
-    }
-    .value{
-      font-variant-numeric: tabular-nums;
-      font-weight: 600;
-      color: rgba(255,255,255,.93);
-    }
-    .divider{
-      height: 1px;
-      background: rgba(255,255,255,.10);
-      margin: 10px 0;
-    }
+    .results-card{ margin-top: 12px; padding: 16px; }
+    .result-row{ display:flex; justify-content: space-between; align-items:center; padding: 10px 0; font-size: 14px; color: rgba(255,255,255,.72); }
+    .value{ font-variant-numeric: tabular-nums; font-weight: 600; color: rgba(255,255,255,.93); }
+    .divider{ height: 1px; background: rgba(255,255,255,.10); margin: 10px 0; }
     .big{ font-size: 16px; color: rgba(255,255,255,.85); }
     .final{ font-size: 18px; color: var(--accent); font-weight: 700; }
     .highlight{ color: var(--good); }
 
     /* Ops list */
     .opsCard{ margin-top: 12px; padding: 14px; text-align:left; }
-    .opRow{
-      display:flex;
-      justify-content: space-between;
-      align-items:center;
-      gap: 10px;
-      padding: 12px 6px;
-      border-top: 1px solid rgba(255,255,255,.08);
-    }
-    .opRow:first-child{ border-top: none; }
+    .opRow{ display:flex; justify-content: space-between; align-items:center; gap: 10px; padding: 12px 6px; border-top: 1px solid rgba(255,255,255,.08); }
+    .opRow:first-child{ border-top:none; }
     .opName{ font-weight: 700; }
     .opMeta{ color: rgba(255,255,255,.65); font-size: 12px; margin-top: 4px; }
     .miniBtns{ display:flex; gap: 8px; }
-    .miniBtn{
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 14px;
-      padding: 10px 12px;
-      cursor: pointer;
-      font-weight: 700;
-      font-size: 12px;
-      transition: transform .12s ease, opacity .12s ease;
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      box-shadow: 0 10px 18px rgba(0,0,0,.25);
-    }
+    .miniBtn{ border: 1px solid rgba(255,255,255,.12); border-radius: 14px; padding: 10px 12px; cursor:pointer; font-weight: 700; font-size: 12px; transition: transform .12s ease, opacity .12s ease; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); box-shadow: 0 10px 18px rgba(0,0,0,.25); }
     .miniBtn:active{ transform: scale(.96); opacity:.92; }
-    .loadBtn{ background: rgba(10,132,255,.75); color: #fff; }
-    .delBtn{ background: rgba(255,69,58,.75); color: #fff; }
+    .loadBtn{ background: rgba(10,132,255,.75); color:#fff; }
+    .delBtn{ background: rgba(255,69,58,.75); color:#fff; }
 
     /* Primary buttons */
-    .btnRow{ display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .btnRow{ display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
     @media (max-width: 520px){ .btnRow{ grid-template-columns: 1fr; } }
-    .btn{
-      width: 100%;
-      padding: 14px 14px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
-      color: rgba(255,255,255,.92);
-      font-weight: 800;
-      cursor: pointer;
-      transition: transform .12s ease, opacity .12s ease;
-      box-shadow: 0 14px 26px rgba(0,0,0,.35);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
-    }
+    .btn{ width:100%; padding: 14px 14px; border-radius: 18px; border: 1px solid rgba(255,255,255,.12); background: rgba(255,255,255,.06); color: rgba(255,255,255,.92); font-weight: 800; cursor:pointer; transition: transform .12s ease, opacity .12s ease; box-shadow: 0 14px 26px rgba(0,0,0,.35); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); }
     .btn:active{ transform: scale(.98); opacity: .9; }
-    .btn.save{ background: rgba(255,214,10,.85); color: #121212; }
-    .btn.export{ background: rgba(191,90,242,.78); color: #fff; }
-    .btn.export2{ background: rgba(10,132,255,.75); color: #fff; }
+    .btn.save{ background: rgba(255,214,10,.85); color:#121212; }
+    .btn.export{ background: rgba(191,90,242,.78); color:#fff; }
+    .btn.export2{ background: rgba(10,132,255,.75); color:#fff; }
 
     /* Utility */
     .mt10{ margin-top: 10px; }
     .mt14{ margin-top: 14px; }
-    .center{ text-align: center; }
-    .glass{ /* alias de card */
-      background: var(--surface);
-      border: 1px solid var(--stroke);
-      border-radius: var(--radius);
-      box-shadow: 0 10px 25px rgba(0,0,0,.35);
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+    .center{ text-align:center; }
+
+    /* Balanceo */
+    .badge{
+      display:inline-flex; align-items:center; gap:6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 800;
+      border: 1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.06);
     }
-  
-/* Grid de suplementos variables */
-.sup-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
-  gap: 12px;
-}
+    .badge.ok{ color: #0f2316; background: rgba(52,199,89,.85); border-color: rgba(52,199,89,.85); }
+    .badge.bad{ color: #2a0b0a; background: rgba(255,69,58,.88); border-color: rgba(255,69,58,.88); }
+    .badge.warn{ color: #2b230a; background: rgba(255,214,10,.88); border-color: rgba(255,214,10,.88); }
 
-/* En pantallas chicas baja a 1 columna */
-@media (max-width: 520px){
-  .sup-grid{ grid-template-columns: 1fr; }
-}
+    .table{ width:100%; border-collapse: collapse; overflow:hidden; border-radius: 16px; background: rgba(15,17,21,.35); border: 1px solid rgba(255,255,255,.10); }
+    .table th{ background: rgba(255,255,255,.06); color: rgba(255,255,255,.85); padding: 10px; font-size: 12px; text-align:left; }
+    .table td{ padding: 10px; border-top: 1px solid rgba(255,255,255,.08); font-size: 13px; color: rgba(255,255,255,.80); vertical-align: top; }
 
-/* Item estilo “card” seleccionable */
-.sup-item{
-  display: grid;
-  grid-template-columns: 1fr auto; /* texto | checkbox */
-  align-items: start;
-  gap: 12px;
+    .chartsGrid{ display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 860px){ .chartsGrid{ grid-template-columns: 1fr; } }
 
-  padding: 14px;
-  border-radius: 18px;
+    canvas{ width:100%; height: 320px; border-radius: 16px; border: 1px solid rgba(255,255,255,.10); background: rgba(15,17,21,.35); }
 
-  background: rgba(15,17,21,.35);
-  border: 1px solid rgba(255,255,255,.12);
+    .heijunkaBox{
+      border-radius: 16px;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(15,17,21,.35);
+      padding: 12px;
+      
+      /* ✅ hacemos el contenedor más alto */
+      max-height: 520px;            /* ajusta: 420/520/650 */
+      overflow-y: auto;             /* scroll vertical */
+      overflow-x: hidden;           /* NO horizontal */
 
-  cursor: pointer;
-  transition: background .15s ease, border-color .15s ease;
-}
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(255,255,255,.25) transparent;
 
-.sup-item:active{
-  transform: scale(.99);
-}
+    }
+    .heijunkaGrid{
+      
+     display: grid;
+     gap: 10px;
+     align-items: stretch;
 
-.sup-item span{
-  min-width: 0;                 /* 🔥 CLAVE */
-  white-space: normal;
-  word-break: normal;
-  overflow-wrap: break-word;
+     /* en lugar de un repeat(buckets...) fijo, usamos auto-fit */
+     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
 
-  font-size: 14px;
-  line-height: 1.25;
-  color: rgba(255,255,255,.9);
-}
-
-.sup-item small{
-  display: block;
-  margin-top: 4px;
-  font-size: 12px;
-  color: rgba(255,255,255,.6);
-  font-weight: 600;
-}
+     /* clave para que no se expanda a lo ancho */
+     width: 100%;
+     min-width: 0;       /* importantísimo para evitar desbordes */
 
 
-/* Checkbox modernito */
-.sup-item input[type="checkbox"]{
-  flex-shrink: 0;
-  margin-top: 2px;
-  transform: scale(1.15);
-  accent-color: var(--accent);
-}
+    }
+    .hjCell{   
+    border: 1px solid rgba(255,255,255,.10);
+    border-radius: 14px;
+    padding: 10px;
+    background: rgba(255,255,255,.04);
 
-/* Resaltado cuando está seleccionado */
-.sup-item input[type="checkbox"]:checked{
-  filter: drop-shadow(0 6px 14px rgba(10,132,255,.25));
-}
+    /* evita que “empuje” el grid */
+    min-width: 0;
+    }
+    
 
-.sup-item:has(input[type="checkbox"]:checked){
-  background: rgba(10,132,255,.10);
-  border-color: rgba(10,132,255,.35);
-}
-#cronometroApp{
-  padding-left: calc(18px + env(safe-area-inset-left));
-  padding-right: calc(18px + env(safe-area-inset-right));
-}
+    @media (max-width: 520px){
+    .heijunkaBox{ max-height: 520px; }  /* igual o un poco más */
+    .heijunkaGrid{ grid-template-columns: 1fr; } /* 1 columna en celular */
+    }
+
+    .hjTop{ font-size: 12px; color: rgba(255,255,255,.72); font-weight: 700; display:flex; justify-content: space-between; }
+    .hjDots{ margin-top: 8px; display:flex; flex-wrap: wrap; gap: 6px; }
+    .dot{ width: 10px; height: 10px; border-radius: 3px; background: rgba(10,132,255,.85); box-shadow: 0 6px 12px rgba(10,132,255,.18); }
+    .dot.dim{ background: rgba(255,255,255,.18); box-shadow: none; }
+    .hjCount{ margin-top: 8px; font-size: 12px; color: rgba(255,255,255,.78); font-weight: 800; }
+
+    .hint{ color: rgba(255,255,255,.60); font-size: 12px; line-height: 1.35; }
   </style>
 </head>
-
 <body>
   <div id="cronometroApp">
     <h1>⏱ Estudio de Tiempos</h1>
-    <div class="subtle">Multi‑operación • Guardado automático • Export CSV / XLSX</div>
+    <div class="subtle">Multi‑operación • Guardado automático • Export CSV / XLSX • Balanceo de línea</div>
 
     <!-- Datos generales -->
     <div class="card mt14">
@@ -471,13 +363,54 @@
       </div>
     </div>
 
-    <!-- Ajustes en accordions -->
+    <!-- NUEVO: Datos de línea -->
+    <details class="mt10" open>
+      <summary>
+        Datos de línea (Takt & Costos)
+        <span class="chip">Takt: <span id="taktChip" class="value">—</span></span>
+      </summary>
+      <div class="grid-3 mt10">
+        <input id="jornadaMin" type="number" min="1" step="1" placeholder="Jornada diaria (min)" />
+        <input id="sueldoSemanal" type="number" min="0" step="0.01" placeholder="Sueldo semanal" />
+        <input id="demandaDiaria" type="number" min="1" step="1" placeholder="Demanda diaria (unid/día)" />
+      </div>
+      <div class="grid-2 mt10">
+        <input id="diasSemana" type="number" min="1" max="7" step="1" value="6" placeholder="Días laborables/sem (default 6)" />
+        <select id="heijunkaInterval">
+          <option value="60">Heijunka: Intervalo 60 min</option>
+          <option value="30">Heijunka: Intervalo 30 min</option>
+          <option value="20">Heijunka: Intervalo 20 min</option>
+          <option value="15">Heijunka: Intervalo 15 min</option>
+        </select>
+      </div>
+
+      <div class="results-card glass mt10">
+        <div class="result-row">
+          <span>Takt time</span>
+          <span id="taktOut" class="value">—</span>
+        </div>
+        <div class="result-row">
+          <span>Costo por minuto</span>
+          <span id="costoMinOut" class="value">—</span>
+        </div>
+        <div class="result-row">
+          <span>Ritmo objetivo</span>
+          <span id="ritmoOut" class="value">—</span>
+        </div>
+        <div class="divider"></div>
+        <div class="hint">
+          <b>Takt</b> = Tiempo disponible / Demanda. <b>Costo/min</b> = Sueldo semanal / (Jornada diaria × Días/sem).
+          Con esto el balanceo marca como <b>cuello de botella</b> cualquier operación con Tiempo Estándar &gt; Takt.
+        </div>
+      </div>
+    </details>
+
+    <!-- Westinghouse -->
     <details class="mt10" open>
       <summary>
         Westinghouse
         <span class="chip">Factor: <span id="factor" class="value">1.00</span></span>
       </summary>
-
       <div class="grid-2 mt10">
         <select id="habilidad">
           <option value="0">Habilidad Normal (0)</option>
@@ -486,19 +419,16 @@
           <option value="-0.03">Regular (-0.03)</option>
           <option value="-0.06">Mala (-0.06)</option>
         </select>
-
         <select id="esfuerzo">
           <option value="0">Esfuerzo Normal (0)</option>
           <option value="0.04">Alto (+0.04)</option>
           <option value="-0.04">Bajo (-0.04)</option>
         </select>
-
         <select id="condiciones">
           <option value="0">Condiciones Normales (0)</option>
           <option value="0.03">Buenas (+0.03)</option>
           <option value="-0.03">Malas (-0.03)</option>
         </select>
-
         <select id="consistencia">
           <option value="0">Consistencia Normal (0)</option>
           <option value="0.02">Alta (+0.02)</option>
@@ -507,114 +437,67 @@
       </div>
     </details>
 
+    <!-- Suplementos -->
     <details class="mt10" open>
-  <summary>
-    Suplementos
-    <span class="chip">Total: <span id="suptotal" class="value">0%</span></span>
-  </summary>
+      <summary>
+        Suplementos
+        <span class="chip">Total: <span id="suptotal" class="value">0%</span></span>
+      </summary>
 
-  <!-- 1) Genero en una sola línea -->
-  <div class="mt10">
-    <h3 style="margin:0 0 8px;">Constante</h3>
-    <select id="genero">
-      <option value="0.09">Hombre (9%)</option>
-      <option value="0.11">Mujer (11%)</option>
-    </select>
-  </div>
-
-  <!-- 2) Variables en dos columnas -->
-  <div class="mt14">
-    <h3 style="margin:0 0 10px;">Variables</h3>
-
-    <div class="sup-grid">
-      <label class="sup-item">
-        <span>Trabajo de pie <small>(+3%)</small></span>
-        <input type="checkbox" value="0.03" class="var">
-      </label>
-
-      <label class="sup-item">
-        <span>Postura incómoda <small>(+10%)</small></span>
-        <input type="checkbox" value="0.10" class="var">
-      </label>
-
-      <label class="sup-item">
-        <span>Esfuerzo físico alto <small>(+5%)</small></span>
-        <input type="checkbox" value="0.05" class="var">
-      </label>
-
-      <label class="sup-item">
-        <span>Ambiente caluroso <small>(+4%)</small></span>
-        <input type="checkbox" value="0.04" class="var">
-      </label>
-
-      <label class="sup-item">
-        <span>Alta tensión visual <small>(+3%)</small></span>
-        <input type="checkbox" value="0.03" class="var">
-      </label>
-
-      <label class="sup-item">
-        <span>Monotonía / Fatiga mental <small>(+5%)</small></span>
-        <input type="checkbox" value="0.05" class="var">
-      </label>
-    </div>
-  </div>
-    <!-- Reloj -->
-    <div class="watch-container">
-      <svg class="ring" width="240" height="240">
-        <circle class="ring-bg" cx="120" cy="120" r="95"></circle>
-        <circle class="ring-progress" cx="120" cy="120" r="95"></circle>
-      </svg>
-      <div class="time" id="display">00:00.00</div>
-    </div>
-
-    <!-- Toolbar controles -->
-    <div class="botones">
-      <button class="circle start" onclick="start()">▶</button>
-      <button class="circle stop" onclick="stop()">⏸</button>
-      <button class="circle lapbtn" onclick="lap()">＋</button>
-      <button class="circle reset" onclick="reset()">⟲</button>
-    </div>
-
-    <!-- Laps -->
-    <div id="lapsCard" class="lapsCard glass">
-      <div class="chip" style="margin-bottom:8px;">
-        Prom: <span id="prom" class="value">00:00.00</span>
-      </div>
-      <div id="laps"></div>
-      <div class="center" style="margin-top:8px; color: rgba(255,255,255,.55); font-size:12px;">
-        (Máximo 10 observaciones por operación)
-      </div>
-    </div>
-
-    <!-- Resultados -->
-    <div class="results-card glass mt10">
-      <div class="result-row">
-        <span>Promedio Observado</span>
-        <span id="prom2" class="value">00:00.00</span>
+      <div class="mt10">
+        <h3 style="margin:0 0 8px;">Constante</h3>
+        <select id="genero">
+          <option value="0.09">Hombre (9%)</option>
+          <option value="0.11">Mujer (11%)</option>
+        </select>
       </div>
 
-      <div class="result-row">
-        <span>Factor Westinghouse</span>
-        <span id="factor2" class="value highlight">1.00</span>
+      <div class="mt14">
+        <h3 style="margin:0 0 10px;">Variables</h3>
+        <div class="sup-grid">
+          <label class="sup-item"><span>Trabajo de pie <small>(+3%)</small></span><input type="checkbox" value="0.03" class="var"></label>
+          <label class="sup-item"><span>Postura incómoda <small>(+10%)</small></span><input type="checkbox" value="0.10" class="var"></label>
+          <label class="sup-item"><span>Esfuerzo físico alto <small>(+5%)</small></span><input type="checkbox" value="0.05" class="var"></label>
+          <label class="sup-item"><span>Ambiente caluroso <small>(+4%)</small></span><input type="checkbox" value="0.04" class="var"></label>
+          <label class="sup-item"><span>Alta tensión visual <small>(+3%)</small></span><input type="checkbox" value="0.03" class="var"></label>
+          <label class="sup-item"><span>Monotonía / Fatiga mental <small>(+5%)</small></span><input type="checkbox" value="0.05" class="var"></label>
+        </div>
       </div>
 
-      <div class="result-row">
-        <span>Total Suplementos</span>
-        <span id="suptotal2" class="value">0%</span>
+      <!-- Reloj -->
+      <div class="watch-container">
+        <svg class="ring" width="240" height="240">
+          <circle class="ring-bg" cx="120" cy="120" r="95"></circle>
+          <circle class="ring-progress" cx="120" cy="120" r="95"></circle>
+        </svg>
+        <div class="time" id="display">00:00.00</div>
       </div>
 
-      <div class="divider"></div>
-
-      <div class="result-row big">
-        <span>Tiempo Normal</span>
-        <span id="normal" class="value">00:00.00</span>
+      <!-- Toolbar controles -->
+      <div class="botones">
+        <button class="circle start" onclick="start()">▶</button>
+        <button class="circle stop" onclick="stop()">⏸</button>
+        <button class="circle lapbtn" onclick="lap()">＋</button>
+        <button class="circle reset" onclick="reset()">⟲</button>
       </div>
 
-      <div class="result-row big final">
-        <span>Tiempo Estándar</span>
-        <span id="estandar" class="value">00:00.00</span>
+      <!-- Laps -->
+      <div id="lapsCard" class="lapsCard glass">
+        <div class="chip" style="margin-bottom:8px;">Prom: <span id="prom" class="value">00:00.00</span></div>
+        <div id="laps"></div>
+        <div class="center" style="margin-top:8px; color: rgba(255,255,255,.55); font-size:12px;">(Máximo 10 observaciones por operación)</div>
       </div>
-    </div>
+
+      <!-- Resultados -->
+      <div class="results-card glass mt10">
+        <div class="result-row"><span>Promedio Observado</span><span id="prom2" class="value">00:00.00</span></div>
+        <div class="result-row"><span>Factor Westinghouse</span><span id="factor2" class="value highlight">1.00</span></div>
+        <div class="result-row"><span>Total Suplementos</span><span id="suptotal2" class="value">0%</span></div>
+        <div class="divider"></div>
+        <div class="result-row big"><span>Tiempo Normal</span><span id="normal" class="value">00:00.00</span></div>
+        <div class="result-row big final"><span>Tiempo Estándar</span><span id="estandar" class="value">00:00.00</span></div>
+      </div>
+    </details>
 
     <!-- Guardar / Exportar -->
     <div class="btnRow">
@@ -631,9 +514,87 @@
       <div style="font-weight:800; margin-bottom:10px;">📦 Operaciones guardadas</div>
       <div id="opsList" style="min-height:20px; color: rgba(255,255,255,.70);">(Aún no guardas operaciones)</div>
     </div>
+
+    <!-- NUEVO: Balanceo + Gráficas -->
+    <div class="opsCard glass mt10">
+      <div style="font-weight:800; margin-bottom:10px;">📊 Balanceo de Línea (Takt, capacidad, costos)</div>
+      <div id="balanceHint" class="hint">Captura la jornada, sueldo y demanda para calcular Takt y costo/min. Luego guarda operaciones para ver el balanceo, Heijunka y Yamazumi.</div>
+      <div id="balanceWrap" style="display:none;">
+        <div class="mt10" style="overflow:auto;">
+          <table class="table" id="balanceTable">
+            <thead>
+              <tr>
+                <th>Operación</th>
+                <th>Tiempo Estándar</th>
+                <th>Takt</th>
+                <th>Estatus</th>
+                <th>Capacidad (unid/día por operador)</th>
+                <th>Operadores requeridos</th>
+                <th>Costo/min</th>
+                <th>Costo unidad (directo)</th>
+                <th>Costo unidad (con staff)</th>
+              </tr>
+            </thead>
+            <tbody id="balanceBody"></tbody>
+          </table>
+        </div>
+
+        <div class="chartsGrid mt10">
+          <div>
+            <div class="chip" style="margin-bottom:8px;">📈 Yamazumi (Tiempo estándar vs Takt)</div>
+            <canvas id="yamazumiCanvas" width="900" height="360"></canvas>
+            <div class="hint mt10">Barras rojas: operación arriba del Takt (cuello de botella). Línea punteada: Takt.</div>
+          </div>
+          <div>
+            <div class="chip" style="margin-bottom:8px;">🧩 Heijunka (Nivelación por intervalos)</div>
+            <div class="heijunkaBox">
+              <div id="heijunkaMeta" class="hint" style="margin-bottom:10px;"></div>
+              <div id="heijunkaGrid" class="heijunkaGrid"></div>
+            </div>
+            <div class="hint mt10">Cada columna es un intervalo (ej. 60 min). Los cuadritos representan unidades objetivo en ese intervalo.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 
 <script>
+  // ==========================
+  // Helpers
+  // ==========================
+  function haptic(ms){ if (navigator.vibrate) navigator.vibrate(ms); }
+  function clamp(n, a, b){ return Math.min(Math.max(n, a), b); }
+  function fmtMoney(n){
+    if (!isFinite(n)) return '—';
+    try {
+      return n.toLocaleString('es-MX', { style: 'currency', currency: 'MXN' });
+    } catch { return '$' + n.toFixed(2); }
+  }
+  function fmtNum(n, d=2){ return isFinite(n) ? Number(n).toFixed(d) : '—'; }
+  function parseNum(id){
+    const el = document.getElementById(id);
+    if (!el) return NaN;
+    const v = String(el.value || '').trim();
+    if (!v) return NaN;
+    const x = Number(v);
+    return isFinite(x) ? x : NaN;
+  }
+  function format(seg) {
+    let m = Math.floor(seg / 60);
+    let s = Math.floor(seg % 60);
+    let cs = Math.floor((seg - Math.floor(seg)) * 100);
+    return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${cs.toString().padStart(2,'0')}`;
+  }
+  function escapeHtml(s){
+    return String(s)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
+
   // ==========================
   // Cronómetro (operación actual)
   // ==========================
@@ -643,87 +604,60 @@
   let laps = [];
   let lastLapTime = 0;
 
-  // ==========================
-  // Multi-operaciones + persistencia
-  // ==========================
-  let savedOps = [];
-  let opAutoId = 1;
-  const LS_KEY = "estudioTiempos_savedOps_v2";
-
-  function haptic(ms){ if (navigator.vibrate) navigator.vibrate(ms); }
-
-  function format(seg) {
-    let m = Math.floor(seg / 60);
-    let s = Math.floor(seg % 60);
-    let cs = Math.floor((seg - Math.floor(seg)) * 100);
-    return `${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}.${cs.toString().padStart(2,'0')}`;
-  }
-
   function start() {
     if (interval) return;
     haptic(10);
-
     startTime = Date.now() - elapsed;
     interval = setInterval(() => {
       elapsed = Date.now() - startTime;
       let seconds = elapsed / 1000;
-
-      document.getElementById("display").innerText = format(seconds);
-
+      document.getElementById('display').innerText = format(seconds);
       let maxTime = 60;
       let progress = (seconds % maxTime) / maxTime;
       let circumference = 597;
-
-      document.querySelector(".ring-progress").style.strokeDashoffset =
+      document.querySelector('.ring-progress').style.strokeDashoffset =
         circumference - (circumference * progress);
     }, 10);
   }
-
   function stop() {
     haptic(10);
     clearInterval(interval);
     interval = null;
   }
-
   function reset() {
     haptic(18);
     stop();
     elapsed = 0;
     laps = [];
     lastLapTime = 0;
-    document.getElementById("display").innerText = "00:00.00";
-    document.getElementById("laps").innerHTML = "";
+    document.getElementById('display').innerText = '00:00.00';
+    document.getElementById('laps').innerHTML = '';
     updateResults();
+    updateBalanceUI();
   }
-
   function lap() {
     if (laps.length >= 10) {
-      alert("Máximo 10 observaciones");
+      alert('Máximo 10 observaciones');
       return;
     }
     haptic(12);
-
     let parcial = (elapsed - lastLapTime) / 1000;
     laps.push(parcial);
     lastLapTime = elapsed;
-
     renderLaps();
     updateResults();
+    updateBalanceUI();
   }
-
   function renderLaps() {
-    let container = document.getElementById("laps");
-    container.innerHTML = "";
+    let container = document.getElementById('laps');
+    container.innerHTML = '';
     if (laps.length === 0) return;
-
     let min = Math.min(...laps);
     let max = Math.max(...laps);
-
     laps.forEach((t, i) => {
-      let clase = "";
-      if (t === min && laps.length > 1) clase = "best";
-      if (t === max && laps.length > 1) clase = "worst";
-
+      let clase = '';
+      if (t === min && laps.length > 1) clase = 'best';
+      if (t === max && laps.length > 1) clase = 'worst';
       container.innerHTML += `
         <div class="lap">
           <span>Obs ${i + 1}</span>
@@ -732,120 +666,129 @@
     });
   }
 
+  // ==========================
+  // Westinghouse + Suplementos
+  // ==========================
   function getSettingsSnapshot() {
-    let habilidad = parseFloat(document.getElementById("habilidad").value);
-    let esfuerzo = parseFloat(document.getElementById("esfuerzo").value);
-    let condiciones = parseFloat(document.getElementById("condiciones").value);
-    let consistencia = parseFloat(document.getElementById("consistencia").value);
-    let genero = parseFloat(document.getElementById("genero").value);
-
+    let habilidad = parseFloat(document.getElementById('habilidad').value);
+    let esfuerzo = parseFloat(document.getElementById('esfuerzo').value);
+    let condiciones = parseFloat(document.getElementById('condiciones').value);
+    let consistencia = parseFloat(document.getElementById('consistencia').value);
+    let genero = parseFloat(document.getElementById('genero').value);
     let variables = [];
-    document.querySelectorAll(".var:checked").forEach(el => {
-      variables.push(parseFloat(el.value));
-    });
-
+    document.querySelectorAll('.var:checked').forEach(el => variables.push(parseFloat(el.value)));
     return { habilidad, esfuerzo, condiciones, consistencia, genero, variables };
   }
-
   function applySettingsSnapshot(s) {
-    document.getElementById("habilidad").value = String(s.habilidad);
-    document.getElementById("esfuerzo").value = String(s.esfuerzo);
-    document.getElementById("condiciones").value = String(s.condiciones);
-    document.getElementById("consistencia").value = String(s.consistencia);
-    document.getElementById("genero").value = String(s.genero);
-
-    document.querySelectorAll(".var").forEach(el => el.checked = false);
+    document.getElementById('habilidad').value = String(s.habilidad ?? 0);
+    document.getElementById('esfuerzo').value = String(s.esfuerzo ?? 0);
+    document.getElementById('condiciones').value = String(s.condiciones ?? 0);
+    document.getElementById('consistencia').value = String(s.consistencia ?? 0);
+    document.getElementById('genero').value = String(s.genero ?? 0.09);
+    document.querySelectorAll('.var').forEach(el => (el.checked = false));
     if (s.variables && s.variables.length) {
-      document.querySelectorAll(".var").forEach(el => {
+      document.querySelectorAll('.var').forEach(el => {
         let v = parseFloat(el.value);
         if (s.variables.indexOf(v) >= 0) el.checked = true;
       });
     }
   }
-
   function calcSummary(lapsArr, settings) {
     if (!lapsArr || lapsArr.length === 0) {
       return { prom: 0, factor: 1, totalSuplementos: 0, normal: 0, estandar: 0 };
     }
-
     let prom = lapsArr.reduce((a,b) => a + b, 0) / lapsArr.length;
     let factor = 1 + settings.habilidad + settings.esfuerzo + settings.condiciones + settings.consistencia;
     let normal = prom * factor;
-
     let constantes = settings.genero;
     let variablesSum = 0;
-    (settings.variables || []).forEach(v => variablesSum += v);
-
+    (settings.variables || []).forEach(v => (variablesSum += v));
     let totalSuplementos = constantes + variablesSum;
     let estandar = normal * (1 + totalSuplementos);
-
     return { prom, factor, totalSuplementos, normal, estandar };
   }
 
   function updateResults() {
     if (laps.length === 0) {
-      document.getElementById("prom").innerText = "00:00.00";
-      document.getElementById("prom2").innerText = "00:00.00";
-
-      document.getElementById("factor").innerText = "1.00";
-      document.getElementById("factor2").innerText = "1.00";
-
-      document.getElementById("suptotal").innerText = "0%";
-      document.getElementById("suptotal2").innerText = "0%";
-
-      document.getElementById("normal").innerText = "00:00.00";
-      document.getElementById("estandar").innerText = "00:00.00";
+      document.getElementById('prom').innerText = '00:00.00';
+      document.getElementById('prom2').innerText = '00:00.00';
+      document.getElementById('factor').innerText = '1.00';
+      document.getElementById('factor2').innerText = '1.00';
+      document.getElementById('suptotal').innerText = '0%';
+      document.getElementById('suptotal2').innerText = '0%';
+      document.getElementById('normal').innerText = '00:00.00';
+      document.getElementById('estandar').innerText = '00:00.00';
       return;
     }
-
     let settings = getSettingsSnapshot();
     let sum = calcSummary(laps, settings);
-
-    document.getElementById("prom").innerText = format(sum.prom);
-    document.getElementById("prom2").innerText = format(sum.prom);
-
-    document.getElementById("factor").innerText = sum.factor.toFixed(2);
-    document.getElementById("factor2").innerText = sum.factor.toFixed(2);
-
-    document.getElementById("suptotal").innerText = (sum.totalSuplementos * 100).toFixed(1) + "%";
-    document.getElementById("suptotal2").innerText = (sum.totalSuplementos * 100).toFixed(1) + "%";
-
-    document.getElementById("normal").innerText = format(sum.normal);
-    document.getElementById("estandar").innerText = format(sum.estandar);
+    document.getElementById('prom').innerText = format(sum.prom);
+    document.getElementById('prom2').innerText = format(sum.prom);
+    document.getElementById('factor').innerText = sum.factor.toFixed(2);
+    document.getElementById('factor2').innerText = sum.factor.toFixed(2);
+    document.getElementById('suptotal').innerText = (sum.totalSuplementos * 100).toFixed(1) + '%';
+    document.getElementById('suptotal2').innerText = (sum.totalSuplementos * 100).toFixed(1) + '%';
+    document.getElementById('normal').innerText = format(sum.normal);
+    document.getElementById('estandar').innerText = format(sum.estandar);
   }
 
   // ==========================
-  // Persistencia localStorage
+  // Persistencia localStorage (ops + línea)
   // ==========================
-  function saveToLocalStorage() {
-    localStorage.setItem(LS_KEY, JSON.stringify(savedOps));
-  }
+  let savedOps = [];
+  let opAutoId = 1;
+  const LS_OPS_V3 = 'estudioTiempos_savedOps_v3';
+  const LS_OPS_V2 = 'estudioTiempos_savedOps_v2';
+  const LS_LINE = 'estudioTiempos_lineSettings_v1';
 
-  function loadFromLocalStorage() {
-    let raw = localStorage.getItem(LS_KEY);
+  function saveOpsLS(){ localStorage.setItem(LS_OPS_V3, JSON.stringify(savedOps)); }
+  function loadOpsLS(){
+    const rawV3 = localStorage.getItem(LS_OPS_V3);
+    const rawV2 = localStorage.getItem(LS_OPS_V2);
+    const raw = rawV3 || rawV2;
     if (!raw) return;
-
     try {
       savedOps = JSON.parse(raw) || [];
       let maxId = 0;
       savedOps.forEach(op => { if (op.id > maxId) maxId = op.id; });
       opAutoId = maxId + 1;
     } catch (e) {
-      console.error("Error leyendo localStorage", e);
+      console.error('Error leyendo localStorage (ops)', e);
       savedOps = [];
     }
   }
 
+  function saveLineLS(){
+    const data = {
+      jornadaMin: parseNum('jornadaMin'),
+      sueldoSemanal: parseNum('sueldoSemanal'),
+      demandaDiaria: parseNum('demandaDiaria'),
+      diasSemana: parseNum('diasSemana'),
+      heijunkaInterval: parseNum('heijunkaInterval') || Number(document.getElementById('heijunkaInterval').value)
+    };
+    localStorage.setItem(LS_LINE, JSON.stringify(data));
+  }
+  function loadLineLS(){
+    const raw = localStorage.getItem(LS_LINE);
+    if (!raw) return;
+    try {
+      const d = JSON.parse(raw) || {};
+      if (isFinite(d.jornadaMin)) document.getElementById('jornadaMin').value = d.jornadaMin;
+      if (isFinite(d.sueldoSemanal)) document.getElementById('sueldoSemanal').value = d.sueldoSemanal;
+      if (isFinite(d.demandaDiaria)) document.getElementById('demandaDiaria').value = d.demandaDiaria;
+      if (isFinite(d.diasSemana)) document.getElementById('diasSemana').value = d.diasSemana;
+      if (isFinite(d.heijunkaInterval)) document.getElementById('heijunkaInterval').value = String(d.heijunkaInterval);
+    } catch(e){ console.warn('No se pudo leer line settings', e); }
+  }
+
   // ==========================
-  // Multi-operaciones: Guardar / Listar / Cargar / Eliminar
+  // Guardar / Listar / Cargar / Eliminar operaciones
   // ==========================
   function saveOperation() {
-    if (laps.length === 0) { alert("No hay observaciones (laps) para guardar."); return; }
-
-    let operacion = (document.getElementById("operacion").value || "").trim();
-    if (!operacion) { alert("Escribe el nombre de la operación antes de guardar."); return; }
-
-    let crono = (document.getElementById("cronometrista").value || "N/A").trim();
+    if (laps.length === 0) { alert('No hay observaciones (laps) para guardar.'); return; }
+    let operacion = (document.getElementById('operacion').value || '').trim();
+    if (!operacion) { alert('Escribe el nombre de la operación antes de guardar.'); return; }
+    let crono = (document.getElementById('cronometrista').value || 'N/A').trim();
     let settings = getSettingsSnapshot();
     let summary = calcSummary(laps, settings);
 
@@ -859,22 +802,22 @@
       savedAt: new Date().toISOString()
     });
 
-    saveToLocalStorage();
+    saveOpsLS();
     renderOpsList();
+    updateBalanceUI();
 
     // prepara siguiente operación
     reset();
-    document.getElementById("operacion").value = "";
+    document.getElementById('operacion').value = '';
   }
 
   function renderOpsList() {
-    let el = document.getElementById("opsList");
+    let el = document.getElementById('opsList');
     if (!savedOps.length) {
-      el.innerHTML = "(Aún no guardas operaciones)";
+      el.innerHTML = '(Aún no guardas operaciones)';
       return;
     }
-
-    let html = "";
+    let html = '';
     savedOps.forEach(op => {
       html += `
         <div class="opRow">
@@ -894,121 +837,471 @@
   function loadOp(id) {
     let idx = savedOps.findIndex(x => x.id === id);
     if (idx < 0) return;
-
     let op = savedOps[idx];
 
-    document.getElementById("operacion").value = op.operacion;
-    document.getElementById("cronometrista").value = op.cronometrista;
+    document.getElementById('operacion').value = op.operacion;
+    document.getElementById('cronometrista').value = op.cronometrista;
     applySettingsSnapshot(op.settings);
 
     laps = op.laps.slice(0);
     lastLapTime = 0;
-    elapsed = 0; // al cargar, reseteamos el cronómetro visual
-    document.getElementById("display").innerText = "00:00.00";
-    document.querySelector(".ring-progress").style.strokeDashoffset = 597;
+    elapsed = 0;
+    document.getElementById('display').innerText = '00:00.00';
+    document.querySelector('.ring-progress').style.strokeDashoffset = 597;
 
     renderLaps();
     updateResults();
 
     // quitar de guardadas para evitar duplicado al re-guardar
     savedOps.splice(idx, 1);
-    saveToLocalStorage();
+    saveOpsLS();
     renderOpsList();
+    updateBalanceUI();
   }
 
   function deleteOp(id) {
     savedOps = savedOps.filter(x => x.id !== id);
-    saveToLocalStorage();
+    saveOpsLS();
     renderOpsList();
+    updateBalanceUI();
   }
 
   function clearAllOperations() {
-    if (!confirm("¿Borrar todas las operaciones guardadas?")) return;
+    if (!confirm('¿Borrar todas las operaciones guardadas y reiniciar estudio?')) return;
     savedOps = [];
-    localStorage.removeItem(LS_KEY);
+    localStorage.removeItem(LS_OPS_V3);
+    localStorage.removeItem(LS_OPS_V2);
     renderOpsList();
-  }
-
-  function escapeHtml(s) {
-    return String(s)
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;")
-      .replace(/'/g, "&#039;");
+    reset();
+    updateBalanceUI();
   }
 
   // ==========================
-  // Export CSV (rápido)
+  // Cálculos de línea (Takt & costo)
+  // ==========================
+  function getLineParams(){
+    const jornadaMin = parseNum('jornadaMin');
+    const sueldoSemanal = parseNum('sueldoSemanal');
+    const demandaDiaria = parseNum('demandaDiaria');
+    let diasSemana = parseNum('diasSemana');
+    if (!isFinite(diasSemana) || diasSemana <= 0) diasSemana = 6;
+    const intervalMin = Number(document.getElementById('heijunkaInterval').value || 60);
+
+    const valid = isFinite(jornadaMin) && jornadaMin > 0 && isFinite(demandaDiaria) && demandaDiaria > 0;
+    const taktMin = valid ? (jornadaMin / demandaDiaria) : NaN;
+    const taktSec = valid ? (taktMin * 60) : NaN;
+
+    const validCost = valid && isFinite(sueldoSemanal) && sueldoSemanal >= 0;
+    const costoMin = validCost ? (sueldoSemanal / (jornadaMin * diasSemana)) : NaN;
+
+    const unidadesPorHora = valid ? (demandaDiaria / (jornadaMin / 60)) : NaN;
+
+    return { jornadaMin, sueldoSemanal, demandaDiaria, diasSemana, intervalMin, taktMin, taktSec, costoMin, unidadesPorHora };
+  }
+
+  function updateLineOutputs(){
+    const p = getLineParams();
+
+    // chips
+    const taktChip = document.getElementById('taktChip');
+    taktChip.textContent = isFinite(p.taktMin) ? `${fmtNum(p.taktMin,2)} min/ud` : '—';
+
+    // outputs
+    document.getElementById('taktOut').textContent = isFinite(p.taktMin)
+      ? `${fmtNum(p.taktMin,3)} min/ud  (${fmtNum(p.taktSec,1)} s/ud)`
+      : '—';
+
+    document.getElementById('costoMinOut').textContent = isFinite(p.costoMin)
+      ? `${fmtMoney(p.costoMin)} / min`
+      : '—';
+
+    document.getElementById('ritmoOut').textContent = isFinite(p.unidadesPorHora)
+      ? `${fmtNum(p.unidadesPorHora,2)} unid/h  (${fmtNum(p.taktSec,1)} s por unidad)`
+      : '—';
+  }
+
+  // ==========================
+  // Balanceo de línea + Yamazumi + Heijunka
+  // ==========================
+  function getOpsForAnalysis(){
+    // incluye guardadas + operación actual (si tiene laps y nombre)
+    const ops = savedOps.slice(0);
+    if (laps.length > 0) {
+      const name = (document.getElementById('operacion').value || '').trim();
+      if (name) {
+        const settings = getSettingsSnapshot();
+        const summary = calcSummary(laps, settings);
+        ops.push({ id: -1, operacion: name + ' (actual)', cronometrista: (document.getElementById('cronometrista').value || 'N/A'), laps: laps.slice(0), settings, summary, savedAt: null });
+      }
+    }
+    return ops;
+  }
+
+  function buildBalanceRows(){
+    const p = getLineParams();
+    const ops = getOpsForAnalysis();
+
+    if (!isFinite(p.taktMin) || !isFinite(p.demandaDiaria) || ops.length === 0){
+      return { rows: [], params: p, ops };
+    }
+
+    const rows = ops.map(op => {
+      const stSec = op.summary?.estandar || 0;
+      const stMin = stSec / 60;
+      const ratio = p.taktMin > 0 ? (stMin / p.taktMin) : NaN;
+      const bottleneck = isFinite(ratio) ? (ratio > 1.0) : false;
+
+      const capacityPerOp = stMin > 0 ? (p.jornadaMin / stMin) : Infinity; // unid/día por operador
+      let opsReq = stMin > 0 ? Math.ceil((p.demandaDiaria * stMin) / p.jornadaMin) : 0;
+      if (stMin > 0) opsReq = Math.max(1, opsReq);
+
+      const directCostUnit = isFinite(p.costoMin) ? (stMin * p.costoMin) : NaN;
+      const dailyCost = isFinite(p.costoMin) ? (opsReq * p.jornadaMin * p.costoMin) : NaN;
+      const costUnitStaff = isFinite(dailyCost) ? (dailyCost / p.demandaDiaria) : NaN;
+
+      return {
+        operacion: op.operacion,
+        stSec, stMin,
+        taktMin: p.taktMin,
+        taktSec: p.taktSec,
+        ratio,
+        bottleneck,
+        capacityPerOp,
+        opsReq,
+        costoMin: p.costoMin,
+        directCostUnit,
+        costUnitStaff
+      };
+    });
+
+    // orden por tiempo estándar desc para ver cuellos primero
+    rows.sort((a,b) => (b.stSec - a.stSec));
+
+    return { rows, params: p, ops };
+  }
+
+  function updateBalanceUI(){
+    updateLineOutputs();
+    const out = buildBalanceRows();
+    const { rows, params } = out;
+
+    const hint = document.getElementById('balanceHint');
+    const wrap = document.getElementById('balanceWrap');
+
+    const hasLine = isFinite(params.taktMin) && isFinite(params.costoMin) && isFinite(params.demandaDiaria);
+    const hasOps = getOpsForAnalysis().length > 0;
+
+    if (!hasLine || !hasOps){
+      wrap.style.display = 'none';
+      hint.style.display = 'block';
+      if (!hasLine) hint.textContent = 'Captura jornada, sueldo y demanda para calcular Takt y costo/min. Luego guarda operaciones para ver el balanceo.';
+      else hint.textContent = 'Guarda al menos una operación (con Tiempo Estándar) para ver el balanceo, Heijunka y Yamazumi.';
+      return;
+    }
+
+    hint.style.display = 'none';
+    wrap.style.display = 'block';
+
+    // tabla
+    const body = document.getElementById('balanceBody');
+    body.innerHTML = '';
+    rows.forEach(r => {
+      const status = r.bottleneck
+        ? `<span class="badge bad">Cuello (${fmtNum(r.ratio,2)}×)</span>`
+        : (r.ratio > 0.90 ? `<span class="badge warn">Al límite (${fmtNum(r.ratio,2)}×)</span>` : `<span class="badge ok">OK (${fmtNum(r.ratio,2)}×)</span>`);
+
+      body.innerHTML += `
+        <tr>
+          <td><b>${escapeHtml(r.operacion)}</b></td>
+          <td>${fmtNum(r.stMin,3)} min<br><span class="hint">(${fmtNum(r.stSec,1)} s)</span></td>
+          <td>${fmtNum(r.taktMin,3)} min<br><span class="hint">(${fmtNum(r.taktSec,1)} s)</span></td>
+          <td>${status}</td>
+          <td>${isFinite(r.capacityPerOp) ? fmtNum(r.capacityPerOp,1) : '—'}</td>
+          <td><b>${r.opsReq}</b></td>
+          <td>${isFinite(r.costoMin) ? fmtMoney(r.costoMin) : '—'}</td>
+          <td>${isFinite(r.directCostUnit) ? fmtMoney(r.directCostUnit) : '—'}</td>
+          <td>${isFinite(r.costUnitStaff) ? fmtMoney(r.costUnitStaff) : '—'}</td>
+        </tr>`;
+    });
+
+    drawYamazumi(rows, params);
+    renderHeijunka(params);
+  }
+
+  function drawYamazumi(rows, params){
+    const canvas = document.getElementById('yamazumiCanvas');
+    if (!canvas) return;
+    const ctx = canvas.getContext('2d');
+
+    // Ajuste a tamaño real (para que sea nítido)
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    const w = Math.max(680, Math.floor(rect.width));
+    const h = Math.floor(rect.height);
+    canvas.width = Math.floor(w * dpr);
+    canvas.height = Math.floor(h * dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+
+    ctx.clearRect(0,0,w,h);
+
+    const padL = 48, padR = 16, padT = 18, padB = 48;
+    const chartW = w - padL - padR;
+    const chartH = h - padT - padB;
+
+    const maxVal = Math.max(params.taktSec || 0, ...rows.map(r => r.stSec)) * 1.15;
+    const yScale = (v) => padT + chartH - (v / (maxVal || 1)) * chartH;
+
+    // grid
+    ctx.strokeStyle = 'rgba(255,255,255,.10)';
+    ctx.lineWidth = 1;
+    ctx.setLineDash([]);
+    const gridLines = 5;
+    for (let i=0;i<=gridLines;i++){
+      const v = (maxVal/gridLines) * i;
+      const y = yScale(v);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL+chartW, y);
+      ctx.stroke();
+
+      ctx.fillStyle = 'rgba(255,255,255,.55)';
+      ctx.font = '12px Inter, Arial';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(Math.round(v) + ' s', padL-8, y);
+    }
+
+    // takt line
+    if (isFinite(params.taktSec)){
+      const yT = yScale(params.taktSec);
+      ctx.strokeStyle = 'rgba(255,214,10,.95)';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([6,6]);
+      ctx.beginPath();
+      ctx.moveTo(padL, yT);
+      ctx.lineTo(padL+chartW, yT);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      ctx.fillStyle = 'rgba(255,214,10,.95)';
+      ctx.font = '12px Inter, Arial';
+      ctx.textAlign = 'left';
+      ctx.fillText('TAKT', padL+6, yT-10);
+    }
+
+    // bars
+    const n = rows.length;
+    const gap = 10;
+    const barW = clamp((chartW - (n-1)*gap)/Math.max(n,1), 24, 68);
+    const totalBarsW = n*barW + (n-1)*gap;
+    let x0 = padL + Math.max(0, (chartW - totalBarsW)/2);
+
+    rows.forEach((r, i) => {
+      const x = x0 + i*(barW+gap);
+      const y = yScale(r.stSec);
+      const bh = (padT+chartH) - y;
+
+      // color
+      const isBad = r.bottleneck;
+      const grad = ctx.createLinearGradient(0, y, 0, y+bh);
+      if (isBad){
+        grad.addColorStop(0, 'rgba(255,69,58,.95)');
+        grad.addColorStop(1, 'rgba(255,69,58,.35)');
+      } else {
+        grad.addColorStop(0, 'rgba(10,132,255,.95)');
+        grad.addColorStop(1, 'rgba(10,132,255,.30)');
+      }
+
+      ctx.fillStyle = grad;
+      roundRect(ctx, x, y, barW, bh, 10, true, false);
+
+      // label value
+      ctx.fillStyle = 'rgba(255,255,255,.88)';
+      ctx.font = '12px Inter, Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'bottom';
+      ctx.fillText(fmtNum(r.stSec,0)+'s', x+barW/2, y-4);
+
+      // x label (short)
+      ctx.fillStyle = 'rgba(255,255,255,.65)';
+      ctx.textBaseline = 'top';
+      const name = r.operacion.replace(' (actual)','');
+      ctx.fillText(shorten(name, 10), x+barW/2, padT+chartH+8);
+    });
+
+    // axis
+    ctx.strokeStyle = 'rgba(255,255,255,.18)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(padL, padT);
+    ctx.lineTo(padL, padT+chartH);
+    ctx.lineTo(padL+chartW, padT+chartH);
+    ctx.stroke();
+  }
+
+  function roundRect(ctx, x, y, w, h, r, fill, stroke){
+    if (w < 2*r) r = w/2;
+    if (h < 2*r) r = h/2;
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.arcTo(x+w, y, x+w, y+h, r);
+    ctx.arcTo(x+w, y+h, x, y+h, r);
+    ctx.arcTo(x, y+h, x, y, r);
+    ctx.arcTo(x, y, x+w, y, r);
+    ctx.closePath();
+    if (fill) ctx.fill();
+    if (stroke) ctx.stroke();
+  }
+  function shorten(s, max){
+    s = String(s || '');
+    if (s.length <= max) return s;
+    return s.slice(0, max-1) + '…';
+  }
+
+  function renderHeijunka(params){
+    const grid = document.getElementById('heijunkaGrid');
+    const meta = document.getElementById('heijunkaMeta');
+    if (!grid || !meta) return;
+
+    const jornada = params.jornadaMin;
+    const demand = params.demandaDiaria;
+    const interval = params.intervalMin;
+
+    if (!isFinite(jornada) || !isFinite(demand) || jornada <= 0 || demand <= 0) {
+      grid.innerHTML = '';
+      meta.textContent = '';
+      return;
+    }
+
+    const buckets = Math.max(1, Math.ceil(jornada / interval));
+    const intervalReal = jornada / buckets; // ajusta para cubrir exacto la jornada
+
+    // distribución entera tipo "largest remainder"
+    const ideal = Array.from({length:buckets}, () => demand * (intervalReal / jornada));
+    const base = ideal.map(x => Math.floor(x));
+    let used = base.reduce((a,b)=>a+b,0);
+    let remaining = demand - used;
+
+    const fracIdx = ideal
+      .map((x,i)=>({i, frac: x - Math.floor(x)}))
+      .sort((a,b)=> b.frac - a.frac);
+
+    for (let k=0;k<remaining;k++) base[fracIdx[k % fracIdx.length].i] += 1;
+
+    // meta
+    meta.innerHTML = `Jornada: <b>${fmtNum(jornada,0)} min</b> • Demanda: <b>${fmtNum(demand,0)} unid/día</b> • Intervalos: <b>${buckets}</b> (≈ ${fmtNum(intervalReal,1)} min c/u) • Pitch aprox: <b>${fmtNum(params.taktMin,2)} min</b>`;
+
+    // render grid
+    
+    grid.innerHTML = '';
+
+    base.forEach((count, idx) => {
+      const startMin = idx * intervalReal;
+      const endMin = (idx+1) * intervalReal;
+      const dots = Math.min(count, 18);
+      const extra = Math.max(0, count - dots);
+
+      const cell = document.createElement('div');
+      cell.className = 'hjCell';
+      cell.innerHTML = `
+        <div class="hjTop">
+          <span>Intervalo ${idx+1}</span>
+          <span>${fmtNum(startMin,0)}–${fmtNum(endMin,0)} min</span>
+        </div>
+        <div class="hjDots">${Array.from({length:dots}, () => '<span class="dot"></span>').join('')}${extra>0?('<span class="hjCount">+'+extra+'</span>'):''}</div>
+        <div class="hjCount">Objetivo: ${count} unid</div>
+      `;
+      grid.appendChild(cell);
+    });
+  }
+
+  // ==========================
+  // Export CSV
   // ==========================
   function exportCSV() {
-    // export guardadas + actual si hay
     let exportOps = savedOps.slice(0);
-
+    // incluye la actual si tiene laps
     if (laps.length > 0) {
-      let operacion = (document.getElementById("operacion").value || "").trim() || "N/A";
-      let crono = (document.getElementById("cronometrista").value || "N/A").trim();
+      let operacion = (document.getElementById('operacion').value || '').trim() || 'N/A';
+      let crono = (document.getElementById('cronometrista').value || 'N/A').trim();
       let settings = getSettingsSnapshot();
       let summary = calcSummary(laps, settings);
       exportOps.push({ id: 0, operacion, cronometrista: crono, laps: laps.slice(0), settings, summary, savedAt: new Date().toISOString() });
     }
+    if (exportOps.length === 0) { alert('No hay datos para exportar.'); return; }
 
-    if (exportOps.length === 0) { alert("No hay datos para exportar."); return; }
+    const p = getLineParams();
+    const bal = buildBalanceRows().rows;
 
-    let csv = "";
-    csv += "Estudio de Tiempos (Multi-operación)\n";
-    csv += "Fecha/Hora exportación:," + new Date().toLocaleString() + "\n\n";
+    let csv = '';
+    csv += 'Estudio de Tiempos (Multi-operación)\n';
+    csv += 'Fecha/Hora exportación:,' + new Date().toLocaleString() + '\n\n';
 
-    csv += "DETALLE (Ciclos por operación)\n";
-    csv += "Operacion,Ciclo,Tiempo_seg,Tiempo_formato\n";
+    // Parámetros de línea
+    csv += 'PARAMETROS DE LINEA\n';
+    csv += 'Jornada_min,Sueldo_semanal,Demanda_diaria,Dias_semana,Takt_min,Takt_seg,Costo_min\n';
+    csv += `${p.jornadaMin || ''},${p.sueldoSemanal || ''},${p.demandaDiaria || ''},${p.diasSemana || ''},${isFinite(p.taktMin)?p.taktMin.toFixed(6):''},${isFinite(p.taktSec)?p.taktSec.toFixed(3):''},${isFinite(p.costoMin)?p.costoMin.toFixed(6):''}\n\n`;
+
+    // Detalle laps
+    csv += 'DETALLE (Ciclos por operación)\n';
+    csv += 'Operacion,Ciclo,Tiempo_seg,Tiempo_formato\n';
     exportOps.forEach(op => op.laps.forEach((t,i) => {
       csv += `${op.operacion},${i+1},${t.toFixed(3)},${format(t)}\n`;
     }));
 
-    csv += "\nRESUMEN (por operación)\n";
-    csv += "Operacion,Observaciones,Promedio,FactorWestinghouse,Suplementos_pct,TiempoNormal,TiempoEstandar\n";
+    // Resumen
+    csv += '\nRESUMEN (por operación)\n';
+    csv += 'Operacion,Observaciones,Promedio,FactorWestinghouse,Suplementos_pct,TiempoNormal,TiempoEstandar\n';
     exportOps.forEach(op => {
       csv += `${op.operacion},${op.laps.length},${format(op.summary.prom)},${op.summary.factor.toFixed(2)},${(op.summary.totalSuplementos*100).toFixed(1)}%,${format(op.summary.normal)},${format(op.summary.estandar)}\n`;
     });
 
-    let blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    let link = document.createElement("a");
+    // Balanceo
+    csv += '\nBALANCEO DE LINEA\n';
+    csv += 'Operacion,TiempoEstandar_min,Takt_min,Estatus,Capacidad_unid_dia_por_operador,Operadores_req,Costo_min,Costo_unidad_directo,Costo_unidad_con_staff\n';
+    bal.forEach(r => {
+      const est = r.bottleneck ? 'Cuello' : (r.ratio > 0.90 ? 'Al limite' : 'OK');
+      csv += `${r.operacion},${(r.stMin).toFixed(6)},${(r.taktMin).toFixed(6)},${est},${isFinite(r.capacityPerOp)?r.capacityPerOp.toFixed(3):''},${r.opsReq},${isFinite(r.costoMin)?r.costoMin.toFixed(6):''},${isFinite(r.directCostUnit)?r.directCostUnit.toFixed(6):''},${isFinite(r.costUnitStaff)?r.costUnitStaff.toFixed(6):''}\n`;
+    });
+
+    let blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    let link = document.createElement('a');
     link.href = URL.createObjectURL(blob);
-    link.download = "Estudio_Tiempos_MultiOperacion.csv";
+    link.download = 'Estudio_Tiempos_Balanceo.csv';
     link.click();
   }
 
   // ==========================
-  // Export XLSX real (ExcelJS) con estilo
+  // Export XLSX (ExcelJS)
   // ==========================
   async function exportXLSX_ExcelJS() {
     let exportOps = savedOps.slice(0);
-
     if (laps.length > 0) {
-      let operacion = (document.getElementById("operacion").value || "").trim() || "N/A";
-      let crono = (document.getElementById("cronometrista").value || "N/A").trim();
+      let operacion = (document.getElementById('operacion').value || '').trim() || 'N/A';
+      let crono = (document.getElementById('cronometrista').value || 'N/A').trim();
       let settings = getSettingsSnapshot();
       let summary = calcSummary(laps, settings);
       exportOps.push({ id: 0, operacion, cronometrista: crono, laps: laps.slice(0), settings, summary, savedAt: new Date().toISOString() });
     }
+    if (exportOps.length === 0) { alert('No hay datos para exportar.'); return; }
 
-    if (exportOps.length === 0) { alert("No hay datos para exportar."); return; }
+    const p = getLineParams();
+    const bal = buildBalanceRows().rows;
 
     const wb = new ExcelJS.Workbook();
-    wb.creator = "Estudio de Tiempos";
+    wb.creator = 'Estudio de Tiempos';
     wb.created = new Date();
 
-    // estilos header
-    const headerFill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1F4E79" } };
-    const headerFont = { name: "Calibri", size: 11, bold: true, color: { argb: "FFFFFFFF" } };
-    const headerAlign = { vertical: "middle", horizontal: "center", wrapText: true };
+    // estilos
+    const headerFill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1F4E79' } };
+    const headerFont = { name: 'Calibri', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+    const headerAlign = { vertical: 'middle', horizontal: 'center', wrapText: true };
     const thinBorder = {
-      top: { style: "thin", color: { argb: "FFBFBFBF" } },
-      left: { style: "thin", color: { argb: "FFBFBFBF" } },
-      bottom: { style: "thin", color: { argb: "FFBFBFBF" } },
-      right: { style: "thin", color: { argb: "FFBFBFBF" } }
+      top: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+      left: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+      bottom: { style: 'thin', color: { argb: 'FFBFBFBF' } },
+      right: { style: 'thin', color: { argb: 'FFBFBFBF' } }
     };
-
     function styleHeaderRow(row){
       row.height = 20;
       row.eachCell(cell => {
@@ -1019,83 +1312,134 @@
       });
     }
 
-    // DETALLE
-    const wsD = wb.addWorksheet("Detalle", { views: [{ state: "frozen", ySplit: 1 }] });
-    wsD.columns = [
-      { header: "Operacion", key: "operacion", width: 28 },
-      { header: "Ciclo", key: "ciclo", width: 8 },
-      { header: "Tiempo (seg)", key: "seg", width: 12 },
-      { header: "Tiempo (formato)", key: "fmt", width: 16 }
+    // PARAMETROS
+    const wsP = wb.addWorksheet('Parametros', { views: [{ state: 'frozen', ySplit: 1 }] });
+    wsP.columns = [
+      { header: 'Parametro', key: 'k', width: 26 },
+      { header: 'Valor', key: 'v', width: 22 }
     ];
-    styleHeaderRow(wsD.getRow(1));
-    wsD.autoFilter = "A1:D1";
-
-    exportOps.forEach(op => {
-      op.laps.forEach((t, i) => {
-        wsD.addRow({
-          operacion: op.operacion,
-          ciclo: i + 1,
-          seg: Number(t.toFixed(3)),
-          fmt: format(t)
-        });
-      });
+    styleHeaderRow(wsP.getRow(1));
+    wsP.addRow({ k: 'Jornada diaria (min)', v: isFinite(p.jornadaMin)? p.jornadaMin : '' });
+    wsP.addRow({ k: 'Sueldo semanal', v: isFinite(p.sueldoSemanal)? p.sueldoSemanal : '' });
+    wsP.addRow({ k: 'Demanda diaria (unid)', v: isFinite(p.demandaDiaria)? p.demandaDiaria : '' });
+    wsP.addRow({ k: 'Días laborables/sem', v: isFinite(p.diasSemana)? p.diasSemana : '' });
+    wsP.addRow({ k: 'Takt (min/unid)', v: isFinite(p.taktMin)? Number(p.taktMin.toFixed(6)) : '' });
+    wsP.addRow({ k: 'Takt (s/unid)', v: isFinite(p.taktSec)? Number(p.taktSec.toFixed(3)) : '' });
+    wsP.addRow({ k: 'Costo por minuto', v: isFinite(p.costoMin)? Number(p.costoMin.toFixed(6)) : '' });
+    wsP.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      row.eachCell(cell => { cell.border = thinBorder; cell.alignment = { vertical:'middle', horizontal:'left' }; });
     });
 
+    // DETALLE
+    const wsD = wb.addWorksheet('Detalle', { views: [{ state: 'frozen', ySplit: 1 }] });
+    wsD.columns = [
+      { header: 'Operacion', key: 'operacion', width: 28 },
+      { header: 'Ciclo', key: 'ciclo', width: 8 },
+      { header: 'Tiempo (seg)', key: 'seg', width: 12 },
+      { header: 'Tiempo (formato)', key: 'fmt', width: 16 }
+    ];
+    styleHeaderRow(wsD.getRow(1));
+    wsD.autoFilter = 'A1:D1';
+    exportOps.forEach(op => {
+      op.laps.forEach((t, i) => {
+        wsD.addRow({ operacion: op.operacion, ciclo: i+1, seg: Number(t.toFixed(3)), fmt: format(t) });
+      });
+    });
     wsD.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
       row.eachCell((cell, colNumber) => {
         cell.border = thinBorder;
-        if (colNumber === 2) { cell.alignment = { vertical: "middle", horizontal: "center" }; cell.numFmt = "0"; }
-        else if (colNumber === 3) { cell.alignment = { vertical: "middle", horizontal: "right" }; cell.numFmt = "0.000"; }
-        else { cell.alignment = { vertical: "middle", horizontal: "left" }; }
+        if (colNumber === 2){ cell.alignment = { vertical:'middle', horizontal:'center' }; cell.numFmt = '0'; }
+        else if (colNumber === 3){ cell.alignment = { vertical:'middle', horizontal:'right' }; cell.numFmt = '0.000'; }
+        else { cell.alignment = { vertical:'middle', horizontal:'left' }; }
       });
     });
 
     // RESUMEN
-    const wsR = wb.addWorksheet("Resumen", { views: [{ state: "frozen", ySplit: 1 }] });
+    const wsR = wb.addWorksheet('Resumen', { views: [{ state: 'frozen', ySplit: 1 }] });
     wsR.columns = [
-      { header: "Operacion", key: "operacion", width: 28 },
-      { header: "Observaciones", key: "obs", width: 14 },
-      { header: "Promedio", key: "prom", width: 14 },
-      { header: "Factor Westinghouse", key: "factor", width: 18 },
-      { header: "Suplementos %", key: "sup", width: 14 },
-      { header: "Tiempo Normal", key: "normal", width: 14 },
-      { header: "Tiempo Estandar", key: "estandar", width: 14 }
+      { header: 'Operacion', key: 'operacion', width: 28 },
+      { header: 'Observaciones', key: 'obs', width: 14 },
+      { header: 'Promedio', key: 'prom', width: 14 },
+      { header: 'Factor Westinghouse', key: 'factor', width: 18 },
+      { header: 'Suplementos %', key: 'sup', width: 14 },
+      { header: 'Tiempo Normal', key: 'normal', width: 14 },
+      { header: 'Tiempo Estandar', key: 'estandar', width: 14 }
     ];
     styleHeaderRow(wsR.getRow(1));
-    wsR.autoFilter = "A1:G1";
-
+    wsR.autoFilter = 'A1:G1';
     exportOps.forEach(op => {
       wsR.addRow({
         operacion: op.operacion,
         obs: op.laps.length,
         prom: format(op.summary.prom),
         factor: Number(op.summary.factor.toFixed(2)),
-        sup: Number((op.summary.totalSuplementos * 100).toFixed(1)),
+        sup: Number((op.summary.totalSuplementos*100).toFixed(1)),
         normal: format(op.summary.normal),
         estandar: format(op.summary.estandar)
       });
     });
-
     wsR.eachRow((row, rowNumber) => {
       if (rowNumber === 1) return;
       row.eachCell((cell, colNumber) => {
         cell.border = thinBorder;
-        if (colNumber === 2) { cell.alignment = { vertical: "middle", horizontal: "center" }; cell.numFmt = "0"; }
-        else if (colNumber === 4) { cell.alignment = { vertical: "middle", horizontal: "right" }; cell.numFmt = "0.00"; }
-        else if (colNumber === 5) { cell.alignment = { vertical: "middle", horizontal: "right" }; cell.numFmt = '0.0"%"'; }
-        else { cell.alignment = { vertical: "middle", horizontal: "left" }; }
+        if (colNumber === 2){ cell.alignment = { vertical:'middle', horizontal:'center' }; cell.numFmt = '0'; }
+        else if (colNumber === 4){ cell.alignment = { vertical:'middle', horizontal:'right' }; cell.numFmt = '0.00'; }
+        else if (colNumber === 5){ cell.alignment = { vertical:'middle', horizontal:'right' }; cell.numFmt = '0.0"%"'; }
+        else { cell.alignment = { vertical:'middle', horizontal:'left' }; }
       });
     });
 
-    const buffer = await wb.xlsx.writeBuffer();
-    const blob = new Blob([buffer], {
-      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+    // BALANCEO
+    const wsB = wb.addWorksheet('Balanceo', { views: [{ state: 'frozen', ySplit: 1 }] });
+    wsB.columns = [
+      { header: 'Operacion', key: 'operacion', width: 28 },
+      { header: 'TE (min)', key: 'stMin', width: 12 },
+      { header: 'TE (s)', key: 'stSec', width: 10 },
+      { header: 'Takt (min)', key: 'tMin', width: 12 },
+      { header: 'Takt (s)', key: 'tSec', width: 10 },
+      { header: 'Ratio (TE/Takt)', key: 'ratio', width: 14 },
+      { header: 'Estatus', key: 'status', width: 12 },
+      { header: 'Capacidad (unid/día/op)', key: 'cap', width: 18 },
+      { header: 'Operadores req', key: 'ops', width: 14 },
+      { header: 'Costo/min', key: 'cmin', width: 12 },
+      { header: 'Costo unidad (directo)', key: 'cud', width: 18 },
+      { header: 'Costo unidad (con staff)', key: 'cus', width: 20 }
+    ];
+    styleHeaderRow(wsB.getRow(1));
+    wsB.autoFilter = 'A1:L1';
+    bal.forEach(r => {
+      const status = r.bottleneck ? 'Cuello' : (r.ratio > 0.90 ? 'Al limite' : 'OK');
+      wsB.addRow({
+        operacion: r.operacion,
+        stMin: Number(r.stMin.toFixed(6)),
+        stSec: Number(r.stSec.toFixed(1)),
+        tMin: Number(r.taktMin.toFixed(6)),
+        tSec: Number(r.taktSec.toFixed(1)),
+        ratio: Number(r.ratio.toFixed(3)),
+        status,
+        cap: isFinite(r.capacityPerOp) ? Number(r.capacityPerOp.toFixed(3)) : null,
+        ops: r.opsReq,
+        cmin: isFinite(r.costoMin) ? Number(r.costoMin.toFixed(6)) : null,
+        cud: isFinite(r.directCostUnit) ? Number(r.directCostUnit.toFixed(6)) : null,
+        cus: isFinite(r.costUnitStaff) ? Number(r.costUnitStaff.toFixed(6)) : null
+      });
+    });
+    wsB.eachRow((row, rowNumber) => {
+      if (rowNumber === 1) return;
+      row.eachCell(cell => {
+        cell.border = thinBorder;
+        cell.alignment = { vertical:'middle', horizontal:'left' };
+      });
     });
 
-    const fileName = "Estudio_Tiempos_MultiOperacion.xlsx";
+    // descarga
+    const buffer = await wb.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const fileName = 'Estudio_Tiempos_Balanceo.xlsx';
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
+    const a = document.createElement('a');
     a.href = url;
     a.download = fileName;
     document.body.appendChild(a);
@@ -1104,21 +1448,36 @@
     URL.revokeObjectURL(url);
   }
 
-  // Recalcular si cambias selects/checks
-  document.addEventListener("change", function(e) {
-    if (e.target && (
-      e.target.id === "habilidad" || e.target.id === "esfuerzo" ||
-      e.target.id === "condiciones" || e.target.id === "consistencia" ||
-      e.target.id === "genero" || e.target.classList.contains("var")
-    )) {
+  // ==========================
+  // Eventos para recalcular
+  // ==========================
+  document.addEventListener('change', function(e) {
+    const t = e.target;
+    const ids = ['habilidad','esfuerzo','condiciones','consistencia','genero','heijunkaInterval'];
+    if (t && (ids.includes(t.id) || t.classList.contains('var') || ['jornadaMin','sueldoSemanal','demandaDiaria','diasSemana'].includes(t.id))) {
       updateResults();
+      saveLineLS();
+      updateBalanceUI();
     }
+  });
+  document.addEventListener('input', function(e){
+    const t = e.target;
+    if (t && ['jornadaMin','sueldoSemanal','demandaDiaria','diasSemana'].includes(t.id)) {
+      saveLineLS();
+      updateBalanceUI();
+    }
+  });
+  window.addEventListener('resize', () => {
+    // re-dibuja canvas al cambiar tamaño
+    updateBalanceUI();
   });
 
   // Init
-  loadFromLocalStorage();
+  loadOpsLS();
+  loadLineLS();
   renderOpsList();
   updateResults();
+  updateBalanceUI();
 </script>
 </body>
 </html>
