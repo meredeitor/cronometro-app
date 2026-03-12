@@ -1,4 +1,4 @@
-# ⏱ Estudio de Tiempos & Balanceo de Líneas
+# ⏱ LeanTakt - Estudio de Tiempos & Balanceo de Líneas
 
 Aplicación web enfocada en **Ingeniería Industrial y Manufactura Esbelta (Lean Manufacturing)** para realizar estudios de tiempos, calcular **Takt Time**, analizar **capacidad**, detectar **cuellos de botella**, y visualizar el **balanceo de líneas** mediante gráficos **Yamazumi** y **Heijunka**.
 
